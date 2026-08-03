@@ -1,5 +1,9 @@
 import { pgTable, text, integer, decimal, timestamp, boolean, jsonb, serial } from "drizzle-orm/pg-core";
 
+/* =========================
+   COMPANY TABLE
+========================= */
+
 export const company = pgTable("company", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().default(""),
@@ -8,9 +12,17 @@ export const company = pgTable("company", {
   email: text("email").notNull().default(""),
   ice: text("ice").notNull().default(""),
   logo: text("logo").default(""),
+
+  // ✅ العملة الافتراضية للشركة
+  currency: text("currency").notNull().default("USD"),
+
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+/* =========================
+   CLIENTS TABLE
+========================= */
 
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
@@ -21,28 +33,61 @@ export const clients = pgTable("clients", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+/* =========================
+   DOCUMENTS TABLE
+========================= */
+
 export const documents = pgTable("documents", {
   id: serial("id").primaryKey(),
   type: text("type").notNull(), // 'invoice' | 'quote'
   number: text("number").notNull().unique(),
   date: text("date").notNull(),
   dueDate: text("due_date").default(""),
+
   clientName: text("client_name").notNull().default(""),
   clientPhone: text("client_phone").default(""),
   clientEmail: text("client_email").default(""),
   clientAddress: text("client_address").default(""),
+
   items: jsonb("items").notNull().default([]),
-  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).notNull().default("20"),
-  discount: decimal("discount", { precision: 10, scale: 2 }).notNull().default("0"),
-  discountType: text("discount_type").notNull().default("fixed"), // 'fixed' | 'percent'
-  status: text("status").notNull().default("draft"),
-  template: text("template").notNull().default("classic"), // 'classic' | 'modern' | 'minimal'
-  language: text("language").notNull().default("ar"), // 'ar' | 'fr' | 'en'
+
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 })
+    .notNull()
+    .default("20"),
+
+  discount: decimal("discount", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
+
+  discountType: text("discount_type")
+    .notNull()
+    .default("fixed"), // 'fixed' | 'percent'
+
+  status: text("status")
+    .notNull()
+    .default("draft"),
+
+  template: text("template")
+    .notNull()
+    .default("classic"), // 'classic' | 'modern' | 'minimal'
+
+  language: text("language")
+    .notNull()
+    .default("ar"), // 'ar' | 'fr' | 'en'
+
+  // ✅ عملة خاصة بالفاتورة (احترافي)
+  currency: text("currency").notNull().default("USD"),
+
   notes: text("notes").default(""),
   convertedFrom: integer("converted_from").default(0),
+
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+/* =========================
+   TYPES
+========================= */
 
 export type Company = typeof company.$inferSelect;
 export type Client = typeof clients.$inferSelect;
