@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,17 +14,24 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
 
-      - run: npm install
+      - name: Install dependencies
+        run: npm install
 
-      - run: npm run dist
+      - name: Build Windows application
+        run: npm run dist -- --publish never
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
         with:
           name: Windows-App
-          path: release/**
+          path: release/*.exe
+          if-no-files-found: error
