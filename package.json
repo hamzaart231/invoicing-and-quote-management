@@ -1,13 +1,22 @@
 {
-  "name": "nextjs-postgresql-template",
+  "name": "invoicing-and-quote-management",
+  "version": "1.0.0",
   "private": true,
+  "main": "electron.js",
+  "author": "hamzaart231",
+  "description": "Invoicing and Quote Management Desktop App",
+
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+
+    "electron": "electron .",
+    "dist": "npm run build && electron-builder"
   },
+
   "dependencies": {
     "date-fns": "^4.4.0",
     "dotenv": "17.3.1",
@@ -21,6 +30,7 @@
     "react-dom": "19.2.6",
     "xlsx": "^0.18.5"
   },
+
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.17",
     "@types/node": "^22.19.15",
@@ -28,10 +38,36 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "drizzle-kit": "0.31.10",
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "postcss": "8.5.8",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3"
+  },
+
+  "build": {
+    "appId": "com.hamza.invoicing",
+    "productName": "Invoicing Manager",
+
+    "directories": {
+      "output": "release"
+    },
+
+    "files": [
+      "**/*",
+      "!release/**",
+      "!node_modules/.cache/**"
+    ],
+
+    "win": {
+      "target": "nsis"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
