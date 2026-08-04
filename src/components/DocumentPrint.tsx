@@ -132,7 +132,7 @@ export default function DocumentPrint({ doc, company }: DocumentPrintProps) {
               <div className="flex justify-between text-sm text-red-600">
                 <span>
                   {t(lang, "discount")}{" "}
-                  {doc.discountType === "percent" ? `(${doc.discount}%)` : ""}
+                  {doc.discountType === "percentage" ? `(${doc.discount}%)` : ""}
                 </span>
                 <span>
                   - {formatCurrency(Number(discountAmount), currency)}
