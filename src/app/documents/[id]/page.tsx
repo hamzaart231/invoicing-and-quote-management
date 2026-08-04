@@ -13,9 +13,8 @@ export default function DocumentViewPage() {
   const { lang } = useLang();
   const router = useRouter();
   const [doc, setDoc] = useState<DocumentData | null>(null);
-  const [company, setCompany] = useState<CompanyData>({ name: "", address: "", phone: "", email: "", ice: "", logo: "" });
+const [company, setCompany] = useState<CompanyData>({ name: "", address: "", phone: "", email: "", ice: "", logo: "", currency: "MAD" });
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     Promise.all([
       fetch(`/api/documents/${id}`).then(r => r.json()),
