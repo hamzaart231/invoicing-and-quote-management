@@ -19,10 +19,11 @@ export interface DocumentData {
   items: DocumentItem[];
   taxRate: number;
   discount: number;
-  discountType: "fixed" | "percent";
+  discountType: "fixed" | "percentage"; // ✅ موحدة
   status: "draft" | "sent" | "paid" | "overdue" | "expired";
   template: "classic" | "modern" | "minimal";
   language: "ar" | "fr" | "en";
+  currency: string; // ✅ إضافة
   notes: string;
   convertedFrom?: number;
   createdAt?: string;
@@ -37,6 +38,7 @@ export interface CompanyData {
   email: string;
   ice: string;
   logo: string;
+  currency?: string; // ✅ إضافة
 }
 
 export interface ClientData {
@@ -51,17 +53,29 @@ export function calcSubtotal(items: DocumentItem[]): number {
   return items.reduce((sum, item) => sum + item.total, 0);
 }
 
-export function calcDiscount(subtotal: number, discount: number, discountType: "fixed" | "percent"): number {
-  if (discountType === "percent") {
+export function calcDiscount(
+  subtotal: number,
+  discount: number,
+  discountType: "fixed" | "percentage"
+): number {
+  if (discountType === "percentage") {
     return (subtotal * discount) / 100;
   }
   return discount;
 }
 
-export function calcTax(subtotal: number, discountAmount: number, taxRate: number): number {
+export function calcTax(
+  subtotal: number,
+  discountAmount: number,
+  taxRate: number
+): number {
   return ((subtotal - discountAmount) * taxRate) / 100;
 }
 
-export function calcTotal(subtotal: number, discountAmount: number, taxAmount: number): number {
+export function calcTotal(
+  subtotal: number,
+  discountAmount: number,
+  taxAmount: number
+): number {
   return subtotal - discountAmount + taxAmount;
 }
