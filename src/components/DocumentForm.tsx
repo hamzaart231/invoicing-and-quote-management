@@ -6,6 +6,7 @@ import { t, Language } from "@/lib/i18n";
 import { DocumentData, DocumentItem, CompanyData, ClientData, calcSubtotal, calcDiscount, calcTax, calcTotal } from "@/lib/types";
 import { Plus, Trash2, Save, Eye, ArrowLeft, ChevronDown } from "lucide-react";
 import DocumentPrint from "./DocumentPrint";
+import { currencies } from "@/lib/currencies";
 
 interface DocumentFormProps {
   initial?: Partial<DocumentData>;
@@ -396,64 +397,95 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Totals */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h3 className="text-sm font-bold text-gray-700 mb-4">{t(lang, "subtotal")}</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">{t(lang, "taxRate")} (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={doc.taxRate}
-                  onChange={e => setDoc(p => ({ ...p, taxRate: parseFloat(e.target.value) || 0 }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">{t(lang, "discountType")}</label>
-                <select
-                  value={doc.discountType}
-                  onChange={e => setDoc(p => ({ ...p, discountType: e.target.value as "fixed" | "percent" }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="fixed">{t(lang, "fixed")}</option>
-                  <option value="percent">{t(lang, "percent")}</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">{t(lang, "discount")}</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={doc.discount}
-                  onChange={e => setDoc(p => ({ ...p, discount: parseFloat(e.target.value) || 0 }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>{t(lang, "subtotal")}</span>
-                <span>{subtotal.toFixed(2)} MAD</span>
-              </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-red-500">
-                  <span>{t(lang, "discount")}</span>
-                  <span>- {discountAmount.toFixed(2)} MAD</span>
-                </div>
-              )}
-              <div className="flex justify-between text-gray-500">
-                <span>{t(lang, "tax")} ({doc.taxRate}%)</span>
-                <span>{taxAmount.toFixed(2)} MAD</span>
-              </div>
-              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
-                <span>{t(lang, "total")}</span>
-                <span className="text-amber-600">{total.toFixed(2)} MAD</span>
-              </div>
-            </div>
-          </div>
+<div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+  <h3 className="text-sm font-bold text-gray-700 mb-4">
+    {t(lang, "subtotal")}
+  </h3>
+
+  <div className="space-y-3">
+
+    {/* ✅ Currency */}
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">
+        Currency
+      </label>
+      <select
+        value={doc.currency}
+        onChange={(e) =>
+          setDoc((p) => ({ ...p, currency: e.target.value }))
+        }
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+      >
+        {currencies.map((c) => (
+          <option key={c.code} value={c.code}>
+            {c.name} ({c.symbol})
+          </option>
+        ))}
+      </select>
+    </div>
+
+    {/* Tax Rate */}
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">
+        {t(lang, "taxRate")} (%)
+      </label>
+      <input
+        type="number"
+        min="0"
+        max="100"
+        value={doc.taxRate}
+        onChange={(e) =>
+          setDoc((p) => ({
+            ...p,
+            taxRate: parseFloat(e.target.value) || 0,
+          }))
+        }
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+      />
+    </div>
+
+    {/* Discount Type */}
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">
+        {t(lang, "discountType")}
+      </label>
+      <select
+        value={doc.discountType}
+        onChange={(e) =>
+          setDoc((p) => ({
+            ...p,
+            discountType: e.target.value as "fixed" | "percent",
+          }))
+        }
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+      >
+        <option value="fixed">{t(lang, "fixed")}</option>
+        <option value="percent">{t(lang, "percent")}</option>
+      </select>
+    </div>
+
+    {/* Discount */}
+    <div>
+      <label className="block text-xs text-gray-500 mb-1">
+        {t(lang, "discount")}
+      </label>
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        value={doc.discount}
+        onChange={(e) =>
+          setDoc((p) => ({
+            ...p,
+            discount: parseFloat(e.target.value) || 0,
+          }))
+        }
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+      />
+    </div>
+
+  </div>
+</div>
 
           {/* Settings */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
