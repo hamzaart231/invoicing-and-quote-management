@@ -66,8 +66,8 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
     email: "",
     ice: "",
     logo: "",
+    currency: "USD",
   });
-
   const [clients, setClients] = useState<ClientData[]>([]);
   const [saving, setSaving] = useState(false);
 
