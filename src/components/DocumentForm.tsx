@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/LanguageContext";
-import { t } from "@/lib/i18n";
+import { t, Language } from "@/lib/i18n";
 import {
   DocumentData,
   DocumentItem,
@@ -81,10 +81,7 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
         if (d.company) {
           setCompany(d.company);
           if (mode === "create") {
-            setDoc((prev) => ({
-              ...prev,
-              currency: d.company.currency || "USD",
-            }));
+            setDoc((prev) => ({ ...prev, currency: d.company.currency || "USD" }));
           }
         }
       })
@@ -102,9 +99,7 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
       fetch(`/api/documents/next-number?type=${type}`)
         .then((r) => r.json())
         .then((d) => {
-          if (d.number) {
-            setDoc((prev) => ({ ...prev, number: d.number }));
-          }
+          if (d.number) setDoc((prev) => ({ ...prev, number: d.number }));
         })
         .catch((err) => console.error("Error fetching number:", err));
     }
@@ -179,283 +174,371 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
     }
   };
 
+  const statusOptions: Array<{ value: DocumentData["status"]; label: string }> = [
+    { value: "draft", label: t(lang, "draft") },
+    { value: "sent", label: t(lang, "sent") },
+    { value: "paid", label: t(lang, "paid") },
+    ...(doc.type === "invoice"
+      ? [{ value: "overdue" as const, label: t(lang, "overdue") }]
+      : [{ value: "expired" as const, label: t(lang, "expired") }]),
+  ];
+  const templateOptions: Array<{ value: string; label: string }> = [
+    { value: "classic", label: t(lang, "classic") },
+    { value: "modern", label: t(lang, "modern") },
+    { value: "minimal", label: t(lang, "minimal") },
+  ];
+  const langOptions: Array<{ value: Language; label: string }> = [
+    { value: "ar", label: "العربية" },
+    { value: "fr", label: "Français" },
+    { value: "en", label: "English" },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.push("/documents")} className="p-2 border rounded hover:bg-gray-50" type="button">
-          <ArrowLeft size={18} />
+      {/* Top bar */}
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <button
+          onClick={() => router.push("/documents")}
+          className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition"
+          type="button"
+        >
+          <ArrowLeft size={18} className={lang === "ar" ? "rotate-180" : ""} />
         </button>
-        <h1 className="text-xl font-bold flex-1">
-          {mode === "create" ? t(lang, "newInvoice") : t(lang, "invoices")}
+        <h1 className="text-xl font-bold text-gray-900 flex-1">
+          {mode === "create"
+            ? doc.type === "invoice" ? t(lang, "newInvoice") : t(lang, "newQuote")
+            : t(lang, "invoices")}
         </h1>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-5 py-2 rounded bg-amber-500 text-white font-bold hover:bg-amber-600 disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow"
           type="button"
         >
-          <Save size={16} className="inline mr-2" />
+          <Save size={16} />
           {saving ? "..." : t(lang, "save")}
         </button>
       </div>
 
-      {/* Document Type & Number */}
-      <div className="bg-white rounded-2xl border p-5 mb-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-1">{t(lang, "type")}</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setDoc((p) => ({ ...p, type: "invoice" }))}
-                className={`flex-1 py-2 rounded text-sm font-semibold border ${doc.type === "invoice" ? "bg-amber-500 text-white border-amber-500" : "bg-white border-gray-200"}`}
-              >
-                {t(lang, "invoice")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDoc((p) => ({ ...p, type: "quote" }))}
-                className={`flex-1 py-2 rounded text-sm font-semibold border ${doc.type === "quote" ? "bg-teal-600 text-white border-teal-600" : "bg-white border-gray-200"}`}
-              >
-                {t(lang, "quote")}
-              </button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main form */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Type & Number */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">{t(lang, "type")}</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDoc((p) => ({ ...p, type: "invoice" }))}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition ${
+                      doc.type === "invoice" ? "bg-amber-500 text-white border-amber-500" : "bg-white border-gray-200 text-gray-600 hover:border-amber-300"
+                    }`}
+                  >
+                    {t(lang, "invoice")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDoc((p) => ({ ...p, type: "quote" }))}
+                    className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition ${
+                      doc.type === "quote" ? "bg-teal-600 text-white border-teal-600" : "bg-white border-gray-200 text-gray-600 hover:border-teal-300"
+                    }`}
+                  >
+                    {t(lang, "quote")}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                  {doc.type === "invoice" ? t(lang, "invoiceNumber") : t(lang, "quoteNumber")}
+                </label>
+                <input
+                  type="text"
+                  value={doc.number}
+                  onChange={(e) => setDoc((p) => ({ ...p, number: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">{t(lang, "date")}</label>
+                <input
+                  type="date"
+                  value={doc.date}
+                  onChange={(e) => setDoc((p) => ({ ...p, date: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">{t(lang, "dueDate")}</label>
+                <input
+                  type="date"
+                  value={doc.dueDate}
+                  onChange={(e) => setDoc((p) => ({ ...p, dueDate: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
             </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">{t(lang, "invoiceNumber")}</label>
-            <input
-              type="text"
-              value={doc.number}
-              onChange={(e) => setDoc((p) => ({ ...p, number: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">{t(lang, "date")}</label>
-            <input
-              type="date"
-              value={doc.date}
-              onChange={(e) => setDoc((p) => ({ ...p, date: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">{t(lang, "dueDate")}</label>
-            <input
-              type="date"
-              value={doc.dueDate}
-              onChange={(e) => setDoc((p) => ({ ...p, dueDate: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Client Info */}
-      <div className="bg-white rounded-2xl border p-5 mb-4">
-        <h3 className="text-sm font-bold mb-3">{t(lang, "client")}</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="relative">
-            <label className="block text-xs mb-1">{t(lang, "clientName")}</label>
-            <input
-              type="text"
-              value={doc.clientName}
-              onChange={(e) => handleClientSearch(e.target.value)}
-              onFocus={() => doc.clientName.length > 1 && setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-            {showSuggestions && clientSuggestions.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 bg-white border rounded shadow-lg mt-1 overflow-hidden">
-                {clientSuggestions.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onMouseDown={() => selectClient(c)}
-                    className="w-full px-3 py-2 text-left hover:bg-amber-50 text-sm flex justify-between"
-                  >
-                    <span className="font-medium">{c.name}</span>
-                    <span className="text-gray-400 text-xs">{c.phone}</span>
-                  </button>
-                ))}
+          {/* Client */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">{t(lang, "client")}</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="relative">
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "clientName")}</label>
+                <input
+                  type="text"
+                  value={doc.clientName}
+                  onChange={(e) => handleClientSearch(e.target.value)}
+                  onFocus={() => doc.clientName.length > 1 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  placeholder={t(lang, "clientName")}
+                />
+                {showSuggestions && clientSuggestions.length > 0 && (
+                  <div className="absolute z-10 top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 overflow-hidden">
+                    {clientSuggestions.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onMouseDown={() => selectClient(c)}
+                        className="w-full px-3 py-2 text-left hover:bg-amber-50 text-sm flex justify-between"
+                      >
+                        <span className="font-medium">{c.name}</span>
+                        <span className="text-gray-400 text-xs">{c.phone}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "clientPhone")}</label>
+                <input
+                  type="tel"
+                  value={doc.clientPhone}
+                  onChange={(e) => setDoc((p) => ({ ...p, clientPhone: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "clientEmail")}</label>
+                <input
+                  type="email"
+                  value={doc.clientEmail}
+                  onChange={(e) => setDoc((p) => ({ ...p, clientEmail: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "clientAddress")}</label>
+                <input
+                  type="text"
+                  value={doc.clientAddress}
+                  onChange={(e) => setDoc((p) => ({ ...p, clientAddress: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "clientPhone")}</label>
-            <input
-              type="tel"
-              value={doc.clientPhone}
-              onChange={(e) => setDoc((p) => ({ ...p, clientPhone: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "clientEmail")}</label>
-            <input
-              type="email"
-              value={doc.clientEmail}
-              onChange={(e) => setDoc((p) => ({ ...p, clientEmail: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "clientAddress")}</label>
-            <input
-              type="text"
-              value={doc.clientAddress}
-              onChange={(e) => setDoc((p) => ({ ...p, clientAddress: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Items */}
-      <div className="bg-white rounded-2xl border p-5 mb-4">
-        <h3 className="text-sm font-bold mb-3">{t(lang, "description")}</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="pb-2 text-left pr-2 min-w-[150px]">{t(lang, "description")}</th>
-                <th className="pb-2 text-center w-20">{t(lang, "quantity")}</th>
-                <th className="pb-2 text-center w-28">{t(lang, "unitPrice")}</th>
-                <th className="pb-2 text-center w-24">{t(lang, "lineTotal")}</th>
-                <th className="pb-2 w-8"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {doc.items.map((item) => (
-                <tr key={item.id} className="border-b">
-                  <td className="py-2 pr-2">
-                    <input
-                      type="text"
-                      value={item.description}
-                      onChange={(e) => updateItem(item.id, "description", e.target.value)}
-                      className="w-full border rounded px-2 py-1.5 text-sm"
-                    />
-                  </td>
-                  <td className="py-2 px-1">
-                    <input
-                      type="number"
-                      min="0"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value) || 0)}
-                      className="w-full border rounded px-2 py-1.5 text-sm text-center"
-                    />
-                  </td>
-                  <td className="py-2 px-1">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.unitPrice}
-                      onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
-                      className="w-full border rounded px-2 py-1.5 text-sm text-center"
-                    />
-                  </td>
-                  <td className="py-2 px-1 text-center font-medium">{item.total.toFixed(2)}</td>
-                  <td className="py-2">
-                    <button type="button" onClick={() => removeItem(item.id)} className="p-1 text-red-400 hover:text-red-600">
-                      <Trash2 size={15} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <button type="button" onClick={addItem} className="mt-3 flex items-center gap-2 text-sm text-amber-600 font-semibold">
-          <Plus size={16} />
-          {t(lang, "addItem")}
-        </button>
-      </div>
+          {/* Items */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">{t(lang, "description")}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="pb-2 font-semibold text-gray-500 text-left rtl:text-right pr-2 min-w-[150px]">{t(lang, "description")}</th>
+                    <th className="pb-2 font-semibold text-gray-500 text-center w-20">{t(lang, "quantity")}</th>
+                    <th className="pb-2 font-semibold text-gray-500 text-center w-28">{t(lang, "unitPrice")}</th>
+                    <th className="pb-2 font-semibold text-gray-500 text-center w-24">{t(lang, "lineTotal")}</th>
+                    <th className="pb-2 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {doc.items.map((item) => (
+                    <tr key={item.id} className="border-b border-gray-50">
+                      <td className="py-2 pr-2">
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={(e) => updateItem(item.id, "description", e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                          placeholder={t(lang, "description")}
+                        />
+                      </td>
+                      <td className="py-2 px-1">
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(item.id, "quantity", parseFloat(e.target.value) || 0)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                      </td>
+                      <td className="py-2 px-1">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.unitPrice}
+                          onChange={(e) => updateItem(item.id, "unitPrice", parseFloat(e.target.value) || 0)}
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                      </td>
+                      <td className="py-2 px-1 text-center font-medium text-gray-700">{item.total.toFixed(2)}</td>
+                      <td className="py-2">
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button type="button" onClick={addItem} className="mt-3 flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 font-semibold">
+              <Plus size={16} />
+              {t(lang, "addItem")}
+            </button>
+          </div>
 
-      {/* Notes */}
-      <div className="bg-white rounded-2xl border p-5 mb-4">
-        <label className="block text-xs font-medium mb-2">{t(lang, "notes")}</label>
-        <textarea
-          value={doc.notes}
-          onChange={(e) => setDoc((p) => ({ ...p, notes: e.target.value }))}
-          rows={3}
-          className="w-full border rounded px-3 py-2 text-sm resize-none"
-        />
-      </div>
-
-      {/* Totals & Currency */}
-      <div className="bg-white rounded-2xl border p-5">
-        <div className="space-y-3 mb-4">
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "currency")}</label>
-            <select
-              value={doc.currency}
-              onChange={(e) => setDoc((p) => ({ ...p, currency: e.target.value }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            >
-              {currencies.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name} ({c.symbol})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "taxRate")} (%)</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              value={doc.taxRate}
-              onChange={(e) => setDoc((p) => ({ ...p, taxRate: parseFloat(e.target.value) || 0 }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "discountType")}</label>
-            <select
-              value={doc.discountType}
-              onChange={(e) => setDoc((p) => ({ ...p, discountType: e.target.value as "fixed" | "percentage" }))}
-              className="w-full border rounded px-3 py-2 text-sm"
-            >
-              <option value="fixed">{t(lang, "fixed")}</option>
-              <option value="percentage">{t(lang, "percent")}</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs mb-1">{t(lang, "discount")}</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={doc.discount}
-              onChange={(e) => setDoc((p) => ({ ...p, discount: parseFloat(e.target.value) || 0 }))}
-              className="w-full border rounded px-3 py-2 text-sm"
+          {/* Notes */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <label className="block text-xs font-semibold text-gray-500 mb-2">{t(lang, "notes")}</label>
+            <textarea
+              value={doc.notes}
+              onChange={(e) => setDoc((p) => ({ ...p, notes: e.target.value }))}
+              rows={3}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
             />
           </div>
         </div>
 
-        <div className="text-sm space-y-1 border-t pt-3">
-          <p className="flex justify-between">
-            <span>{t(lang, "subtotal")}:</span>
-            <span className="font-medium">{formatCurrency(subtotal, doc.currency)}</span>
-          </p>
-          {discountAmount > 0 && (
-            <p className="flex justify-between text-red-500">
-              <span>{t(lang, "discount")}:</span>
-              <span>- {formatCurrency(discountAmount, doc.currency)}</span>
-            </p>
-          )}
-          <p className="flex justify-between">
-            <span>{t(lang, "tax")} ({doc.taxRate}%):</span>
-            <span className="font-medium">{formatCurrency(taxAmount, doc.currency)}</span>
-          </p>
-          <p className="flex justify-between text-lg font-bold border-t pt-2">
-            <span>{t(lang, "total")}:</span>
-            <span>{formatCurrency(total, doc.currency)}</span>
-          </p>
+        {/* Sidebar */}
+        <div className="space-y-4">
+          {/* Totals & Currency */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 className="text-sm font-bold text-gray-700 mb-4">{t(lang, "currency")}</h3>
+            <div className="space-y-3">
+              <div>
+                <select
+                  value={doc.currency}
+                  onChange={(e) => setDoc((p) => ({ ...p, currency: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  {currencies.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} ({c.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "taxRate")} (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={doc.taxRate}
+                  onChange={(e) => setDoc((p) => ({ ...p, taxRate: parseFloat(e.target.value) || 0 }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "discountType")}</label>
+                <select
+                  value={doc.discountType}
+                  onChange={(e) => setDoc((p) => ({ ...p, discountType: e.target.value as "fixed" | "percentage" }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="fixed">{t(lang, "fixed")}</option>
+                  <option value="percentage">{t(lang, "percent")}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "discount")}</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={doc.discount}
+                  onChange={(e) => setDoc((p) => ({ ...p, discount: parseFloat(e.target.value) || 0 }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-500">
+                <span>{t(lang, "subtotal")}</span>
+                <span>{formatCurrency(subtotal, doc.currency)}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-red-500">
+                  <span>{t(lang, "discount")}</span>
+                  <span>- {formatCurrency(discountAmount, doc.currency)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-gray-500">
+                <span>{t(lang, "tax")} ({doc.taxRate}%)</span>
+                <span>{formatCurrency(taxAmount, doc.currency)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
+                <span>{t(lang, "total")}</span>
+                <span className="text-amber-600">{formatCurrency(total, doc.currency)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h3 className="text-sm font-bold text-gray-700 mb-4">{t(lang, "template")}</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "status")}</label>
+                <select
+                  value={doc.status}
+                  onChange={(e) => setDoc((p) => ({ ...p, status: e.target.value as DocumentData["status"] }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  {statusOptions.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "template")}</label>
+                <select
+                  value={doc.template}
+                  onChange={(e) => setDoc((p) => ({ ...p, template: e.target.value as DocumentData["template"] }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  {templateOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t(lang, "documentLanguage")}</label>
+                <select
+                  value={doc.language}
+                  onChange={(e) => setDoc((p) => ({ ...p, language: e.target.value as Language }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  {langOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-    }
+}
