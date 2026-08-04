@@ -33,6 +33,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create placeholder web assets
+        run: |
+          mkdir -p out
+          echo "<html><body>Loading...</body></html>" > out/index.html
+
       - name: Add Android platform (if missing)
         run: |
           if [ ! -d "android" ]; then
