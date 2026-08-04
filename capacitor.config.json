@@ -1,0 +1,9 @@
+{
+  "appId": "com.hamzaart231.invoicingapp",
+  "appName": "Invoicing App",
+  "webDir": "out",
+  "server": {
+    "url": "https://invoicing-and-quote-management.vercel.app",
+    "cleartext": false
+  }
+}
