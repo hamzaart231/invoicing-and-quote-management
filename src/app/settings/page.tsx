@@ -7,9 +7,9 @@ import { Save, Upload, Building2, CheckCircle } from "lucide-react";
 
 export default function SettingsPage() {
   const { lang } = useLang();
-  const [company, setCompany] = useState<CompanyData>({
-    name: "", address: "", phone: "", email: "", ice: "", logo: "",
-  });
+const [company, setCompany] = useState<CompanyData>({
+  name: "", address: "", phone: "", email: "", ice: "", logo: "", currency: "MAD",
+});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
