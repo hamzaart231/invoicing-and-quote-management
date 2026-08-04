@@ -55,13 +55,13 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
 
   useEffect(() => {
   fetch("/api/company")
-    .then(r => r.json())
-    .then(d => {
+    .then((r) => r.json())
+    .then((d) => {
       if (d.company) {
         setCompany(d.company);
 
         if (mode === "create") {
-          setDoc(prev => ({
+          setDoc((prev) => ({
             ...prev,
             currency: d.company.currency || "USD",
           }));
@@ -70,28 +70,25 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
     });
 
   fetch("/api/clients")
-    .then(r => r.json())
-    .then(d => {
+    .then((r) => r.json())
+    .then((d) => {
       if (d.clients) setClients(d.clients);
     });
 
   if (mode === "create" && !initial?.number) {
     const type = initial?.type ?? "invoice";
     fetch(`/api/documents/next-number?type=${type}`)
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (d.number) {
-          setDoc(prev => ({ ...prev, number: d.number }));
+          setDoc((prev) => ({
+            ...prev,
+            number: d.number,
+          }));
         }
       });
   }
-
 }, [mode]);
-  });
-      });
-    }
-  }, [mode, initial?.number, initial?.type]);
-
   const updateItem = (id: string, field: keyof DocumentItem, value: string | number) => {
     setDoc(prev => ({
       ...prev,
