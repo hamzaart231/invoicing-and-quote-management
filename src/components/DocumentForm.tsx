@@ -42,7 +42,7 @@ const defaultDoc = (): DocumentData => ({
   items: [emptyItem()],
   taxRate: 20,
   discount: 0,
-  discountType: "fixed",
+  discountType: "percentage",
   status: "draft",
   template: "classic",
   language: "ar",
@@ -71,16 +71,13 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
   const [clients, setClients] = useState<ClientData[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // ✅ إصلاح dependency array
   useEffect(() => {
-    // جلب بيانات الشركة
     fetch("/api/company")
       .then((r) => r.json())
       .then((d) => {
         if (d.company) {
           setCompany(d.company);
 
-          // تعيين عملة الشركة للفواتير الجديدة
           if (mode === "create") {
             setDoc((prev) => ({
               ...prev,
@@ -91,7 +88,6 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
       })
       .catch((err) => console.error("Error fetching company:", err));
 
-    // جلب العملاء
     fetch("/api/clients")
       .then((r) => r.json())
       .then((d) => {
@@ -99,7 +95,6 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
       })
       .catch((err) => console.error("Error fetching clients:", err));
 
-    // توليد رقم تلقائي للفواتير الجديدة
     if (mode === "create" && !initial?.number) {
       const type = initial?.type ?? "invoice";
 
@@ -115,7 +110,7 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
         })
         .catch((err) => console.error("Error fetching number:", err));
     }
-  }, [mode, initial?.type, initial?.number]); // ✅ إضافة dependencies
+  }, [mode, initial?.type, initial?.number]);
 
   const subtotal = calcSubtotal(doc.items);
   const discountAmount = calcDiscount(subtotal, doc.discount, doc.discountType);
@@ -207,14 +202,18 @@ export default function DocumentForm({ initial, mode }: DocumentFormProps) {
         <div className="text-sm mt-4 space-y-1">
           <p className="flex justify-between">
             <span>{t(lang, "subtotal")}:</span>
-            <span className="font-medium">{subtotal.toFixed(2)} {doc.currency}</span>
+            <span className="font-medium">
+              {subtotal.toFixed(2)} {doc.currency}
+            </span>
           </p>
           <p className="flex justify-between text-lg font-bold">
             <span>{t(lang, "total")}:</span>
-            <span>{total.toFixed(2)} {doc.currency}</span>
+            <span>
+              {total.toFixed(2)} {doc.currency}
+            </span>
           </p>
         </div>
       </div>
     </div>
   );
-    }
+}
