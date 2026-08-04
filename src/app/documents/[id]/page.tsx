@@ -26,33 +26,57 @@ const [company, setCompany] = useState<CompanyData>({ name: "", address: "", pho
     });
   }, [id]);
 
-  const handlePrint = () => {
-    if (!doc) return;
-    const printContent = document.getElementById("print-doc");
-    if (!printContent) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`
-      <!DOCTYPE html>
-      <html dir="${doc.language === "ar" ? "rtl" : "ltr"}" lang="${doc.language}">
-        <head>
-          <meta charset="UTF-8" />
-          <title>${doc.number}</title>
-          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-          <script src="https://cdn.tailwindcss.com"><\/script>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-          </style>
-        </head>
-        <body>
-          ${printContent.innerHTML}
-          <script>window.onload = () => { window.print(); setTimeout(() => window.close(), 500); }<\/script>
-        </body>
-      </html>
-    `);
-    win.document.close();
-  };
+const handlePrint = () => {
+  const printContent = document.getElementById("print-doc");
+  if (!printContent) return;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="${doc?.language}" dir="${doc?.language === "ar" ? "rtl" : "ltr"}">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${doc?.number}</title>
+
+        <style>
+          body{
+            margin:20px;
+            font-family:Arial,Helvetica,sans-serif;
+            background:#fff;
+          }
+
+          *{
+            -webkit-print-color-adjust:exact !important;
+            print-color-adjust:exact !important;
+          }
+
+          @page{
+            size:A4;
+            margin:10mm;
+          }
+        </style>
+      </head>
+
+      <body>
+        ${printContent.innerHTML}
+
+        <script>
+          window.onload = function () {
+            setTimeout(function () {
+              window.print();
+            },300);
+          };
+        <\/script>
+
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+};
 
   const handleDelete = async () => {
     if (!window.confirm(t(lang, "deleteConfirm"))) return;
