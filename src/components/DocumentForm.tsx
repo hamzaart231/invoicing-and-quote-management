@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/LanguageContext";
-import { t, Language } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import {
   DocumentData,
   DocumentItem,
@@ -15,7 +15,6 @@ import {
   calcTotal,
 } from "@/lib/types";
 import { Save, ArrowLeft } from "lucide-react";
-import DocumentPrint from "./DocumentPrint";
 import { currencies } from "@/lib/currencies";
 
 interface DocumentFormProps {
@@ -51,10 +50,7 @@ const defaultDoc = (): DocumentData => ({
   notes: "",
 });
 
-export default function DocumentForm({
-  initial,
-  mode,
-}: DocumentFormProps) {
+export default function DocumentForm({ initial, mode }: DocumentFormProps) {
   const { lang } = useLang();
   const router = useRouter();
 
@@ -75,13 +71,16 @@ export default function DocumentForm({
   const [clients, setClients] = useState<ClientData[]>([]);
   const [saving, setSaving] = useState(false);
 
+  // ✅ إصلاح dependency array
   useEffect(() => {
+    // جلب بيانات الشركة
     fetch("/api/company")
       .then((r) => r.json())
       .then((d) => {
         if (d.company) {
           setCompany(d.company);
 
+          // تعيين عملة الشركة للفواتير الجديدة
           if (mode === "create") {
             setDoc((prev) => ({
               ...prev,
@@ -89,14 +88,18 @@ export default function DocumentForm({
             }));
           }
         }
-      });
+      })
+      .catch((err) => console.error("Error fetching company:", err));
 
+    // جلب العملاء
     fetch("/api/clients")
       .then((r) => r.json())
       .then((d) => {
         if (d.clients) setClients(d.clients);
-      });
+      })
+      .catch((err) => console.error("Error fetching clients:", err));
 
+    // توليد رقم تلقائي للفواتير الجديدة
     if (mode === "create" && !initial?.number) {
       const type = initial?.type ?? "invoice";
 
@@ -109,16 +112,13 @@ export default function DocumentForm({
               number: d.number,
             }));
           }
-        });
+        })
+        .catch((err) => console.error("Error fetching number:", err));
     }
-  }, [mode]);
+  }, [mode, initial?.type, initial?.number]); // ✅ إضافة dependencies
 
   const subtotal = calcSubtotal(doc.items);
-  const discountAmount = calcDiscount(
-    subtotal,
-    doc.discount,
-    doc.discountType
-  );
+  const discountAmount = calcDiscount(subtotal, doc.discount, doc.discountType);
   const taxAmount = calcTax(subtotal, discountAmount, doc.taxRate);
   const total = calcTotal(subtotal, discountAmount, taxAmount);
 
@@ -131,8 +131,7 @@ export default function DocumentForm({
           ? `/api/documents/${doc.id}`
           : "/api/documents";
 
-      const method =
-        mode === "edit" && doc.id ? "PUT" : "POST";
+      const method = mode === "edit" && doc.id ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
@@ -142,7 +141,14 @@ export default function DocumentForm({
 
       if (res.ok) {
         router.push("/documents");
+      } else {
+        const error = await res.json();
+        console.error("Save failed:", error);
+        alert("Failed to save document");
       }
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Error saving document");
     } finally {
       setSaving(false);
     }
@@ -153,21 +159,21 @@ export default function DocumentForm({
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => router.push("/documents")}
-          className="p-2 border rounded"
+          className="p-2 border rounded hover:bg-gray-50"
+          type="button"
         >
           <ArrowLeft size={18} />
         </button>
 
         <h1 className="text-xl font-bold flex-1">
-          {mode === "create"
-            ? t(lang, "newInvoice")
-            : t(lang, "invoices")}
+          {mode === "create" ? t(lang, "newInvoice") : t(lang, "invoices")}
         </h1>
 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-5 py-2 rounded bg-amber-500 text-white font-bold"
+          className="px-5 py-2 rounded bg-amber-500 text-white font-bold hover:bg-amber-600 disabled:opacity-50"
+          type="button"
         >
           <Save size={16} className="inline mr-2" />
           {saving ? "..." : t(lang, "save")}
@@ -176,8 +182,8 @@ export default function DocumentForm({
 
       <div className="bg-white rounded-2xl border p-5">
         <div className="mb-4">
-          <label className="block text-xs mb-1">
-            Currency
+          <label className="block text-xs mb-1 font-medium">
+            {t(lang, "currency")}
           </label>
 
           <select
@@ -188,7 +194,7 @@ export default function DocumentForm({
                 currency: e.target.value,
               }))
             }
-            className="w-full border rounded px-3 py-2 text-sm"
+            className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500"
           >
             {currencies.map((c) => (
               <option key={c.code} value={c.code}>
@@ -198,12 +204,14 @@ export default function DocumentForm({
           </select>
         </div>
 
-        <div className="text-sm mt-4">
-          <p>
-            {t(lang, "subtotal")}: {subtotal}
+        <div className="text-sm mt-4 space-y-1">
+          <p className="flex justify-between">
+            <span>{t(lang, "subtotal")}:</span>
+            <span className="font-medium">{subtotal.toFixed(2)} {doc.currency}</span>
           </p>
-          <p>
-            {t(lang, "total")}: {total}
+          <p className="flex justify-between text-lg font-bold">
+            <span>{t(lang, "total")}:</span>
+            <span>{total.toFixed(2)} {doc.currency}</span>
           </p>
         </div>
       </div>
