@@ -34,46 +34,72 @@ const handlePrint = () => {
   if (!printWindow) return;
 
   printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="${doc?.language}" dir="${doc?.language === "ar" ? "rtl" : "ltr"}">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${doc?.number}</title>
+<!DOCTYPE html>
+<html lang="${doc?.language}" dir="${doc?.language === "ar" ? "rtl" : "ltr"}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <style>
-          body{
-            margin:20px;
-            font-family:Arial,Helvetica,sans-serif;
-            background:#fff;
-          }
+<title>${doc?.number}</title>
 
-          *{
-            -webkit-print-color-adjust:exact !important;
-            print-color-adjust:exact !important;
-          }
+<script src="https://cdn.tailwindcss.com"></script>
 
-          @page{
-            size:A4;
-            margin:10mm;
-          }
-        </style>
-      </head>
+<style>
+@page{
+    size:A4;
+    margin:10mm;
+}
 
-      <body>
-        ${printContent.innerHTML}
+html,body{
+    margin:0;
+    padding:0;
+    background:#ffffff;
+    font-family:Arial,"Noto Sans Arabic",sans-serif;
+}
 
-        <script>
-          window.onload = function () {
-            setTimeout(function () {
-              window.print();
-            },300);
-          };
-        <\/script>
+*{
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+    color-adjust:exact !important;
+}
 
-      </body>
-    </html>
-  `);
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    border:1px solid #d1d5db;
+}
+
+img{
+    max-width:100%;
+}
+
+.shadow-xl,
+.shadow-md,
+.shadow-sm{
+    box-shadow:none !important;
+}
+</style>
+
+</head>
+
+<body>
+
+${printContent.innerHTML}
+
+<script>
+window.onload=function(){
+setTimeout(()=>{
+window.print();
+},500);
+}
+<\/script>
+
+</body>
+</html>
+`);
 
   printWindow.document.close();
 };
