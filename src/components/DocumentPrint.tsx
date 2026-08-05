@@ -216,72 +216,81 @@ export default function DocumentPrint({ doc, company }: DocumentPrintProps) {
 
 </table>
 
-      {/* Totals */}
-<div className={`mt-8 flex ${dir === "rtl" ? "justify-start" : "justify-end"}`}>
+          {/* Totals */}
+        <div className={`mt-8 flex ${dir === "rtl" ? "justify-start" : "justify-end"}`}>
+          <div className="w-full max-w-md border rounded-xl shadow-sm overflow-hidden">
 
-  <div className="w-full max-w-md border rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-slate-800 text-white px-5 py-3 font-bold text-lg">
+              {t(lang, "total")}
+            </div>
 
-    <div className="bg-slate-800 text-white px-5 py-3 font-bold text-lg">
-      {t(lang, "total")}
-    </div>
+            <div className="bg-white p-5 space-y-3">
 
-    <div className="bg-white p-5 space-y-3">
+              <div className="flex justify-between">
+                <span>{t(lang,"subtotal")}</span>
+                <strong>{formatCurrency(Number(subtotal),currency)}</strong>
+              </div>
 
-      <div className="flex justify-between">
-        <span>{t(lang, "subtotal")}</span>
-        <strong>{formatCurrency(Number(subtotal), currency)}</strong>
-      </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>
+                    {t(lang,"discount")}
+                    {doc.discountType==="percentage"
+                      ? ` (${doc.discount}%)`
+                      : ""}
+                  </span>
 
-      {discountAmount > 0 && (
-        <div className="flex justify-between text-red-600">
-          <span>
-            {t(lang, "discount")}
-          </span>
-          <strong>
-            - {formatCurrency(Number(discountAmount), currency)}
-          </strong>
+                  <strong>
+                    - {formatCurrency(Number(discountAmount),currency)}
+                  </strong>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span>
+                  {t(lang,"tax")} ({doc.taxRate}%)
+                </span>
+
+                <strong>
+                  {formatCurrency(Number(taxAmount),currency)}
+                </strong>
+              </div>
+
+              <hr />
+
+              <div className="flex justify-between text-2xl font-bold text-slate-900">
+                <span>{t(lang,"total")}</span>
+
+                <span>
+                  {formatCurrency(Number(total),currency)}
+                </span>
+              </div>
+
+            </div>
+          </div>
         </div>
-      )}
 
-      <div className="flex justify-between">
-        <span>
-          {t(lang, "tax")} ({doc.taxRate}%)
-        </span>
-        <strong>
-          {formatCurrency(Number(taxAmount), currency)}
-        </strong>
-      </div>
-
-      <hr />
-
-      <div className="flex justify-between text-2xl font-bold text-slate-900">
-        <span>{t(lang, "total")}</span>
-        <span>{formatCurrency(Number(total), currency)}</span>
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-        {/* Notes */}
+                {/* Notes */}
         {doc.notes && (
           <div className="mt-8 p-4 bg-gray-50 rounded-lg border">
             <p className="text-xs font-bold uppercase tracking-wider mb-2">
               {t(lang, "notes")}
             </p>
-            <p className="text-sm whitespace-pre-wrap">{doc.notes}</p>
+
+            <p className="text-sm whitespace-pre-wrap">
+              {doc.notes}
+            </p>
           </div>
         )}
-      </div>
 
-      {/* Footer */}
-      <div className="px-8 py-4 border-t text-center">
-        <p className="text-xs text-gray-400">
-          {company.name} {company.ice ? `— ICE: ${company.ice}` : ""}
-        </p>
-      </div>
+        {/* Footer */}
+        <div className="px-8 py-4 border-t text-center">
+          <p className="text-xs text-gray-400">
+            {company.name}
+            {company.ice ? ` — ICE: ${company.ice}` : ""}
+          </p>
+        </div>
+
     </div>
   );
-}
+  }
