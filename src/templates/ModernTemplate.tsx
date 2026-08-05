@@ -183,11 +183,106 @@ export default function ModernTemplate({
 
         </div>
       </header>
-      <main className="px-10 py-8">
-        <p className="text-slate-500">
-          Modern template under development...
-        </p>
-      </main>
+      <main className="px-10 py-8 space-y-8">
+
+  {/* Customer & Invoice Details */}
+
+  <section className="grid grid-cols-2 gap-8">
+
+    {/* Customer */}
+
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+        {t(lang, "client")}
+      </p>
+
+      <h2 className="text-xl font-semibold text-slate-900">
+        {doc.clientName}
+      </h2>
+
+      <div className="mt-5 space-y-2 text-sm text-slate-600">
+
+        {doc.clientAddress && (
+          <p>{doc.clientAddress}</p>
+        )}
+
+        {doc.clientPhone && (
+          <p>{doc.clientPhone}</p>
+        )}
+
+        {doc.clientEmail && (
+          <p>{doc.clientEmail}</p>
+        )}
+
+      </div>
+
     </div>
-  );
-}
+
+    {/* Invoice Summary */}
+
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+
+      <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+        {t(lang, "invoice")}
+      </p>
+
+      <div className="space-y-4">
+
+        <div className="flex justify-between">
+
+          <span className="text-slate-500">
+            {t(lang, "number")}
+          </span>
+
+          <strong>{doc.number}</strong>
+
+        </div>
+
+        <div className="flex justify-between">
+
+          <span className="text-slate-500">
+            {t(lang, "date")}
+          </span>
+
+          <strong>
+            {formatDate(doc.date, lang)}
+          </strong>
+
+        </div>
+
+        {doc.dueDate && (
+
+          <div className="flex justify-between">
+
+            <span className="text-slate-500">
+              {t(lang, "dueDate")}
+            </span>
+
+            <strong>
+              {formatDate(doc.dueDate, lang)}
+            </strong>
+
+          </div>
+
+        )}
+
+        <div className="flex justify-between">
+
+          <span className="text-slate-500">
+            {t(lang, "status")}
+          </span>
+
+          <strong>
+            {getStatusLabel()}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
