@@ -73,3 +73,113 @@ export default function ModernTemplate({
       }}
       className="mx-auto w-full max-w-[210mm] min-h-[297mm] bg-white text-slate-800 print:min-h-0"
     >
+      {/* Header */}
+      <header className="border-b border-slate-200 px-10 py-8">
+        <div className="flex items-start justify-between gap-8">
+
+          {/* Company */}
+
+          <div className="flex-1">
+
+            {company.logo && (
+              <img
+                src={company.logo}
+                alt="Company Logo"
+                className="mb-6 h-20 object-contain"
+              />
+            )}
+
+            <h1 className="text-3xl font-bold text-slate-900">
+              {company.name}
+            </h1>
+
+            <div className="mt-5 space-y-2 text-sm text-slate-600">
+
+              {company.address && (
+                <p>{company.address}</p>
+              )}
+
+              {company.phone && (
+                <p>{company.phone}</p>
+              )}
+
+              {company.email && (
+                <p>{company.email}</p>
+              )}
+
+              {company.ice && (
+                <p>ICE : {company.ice}</p>
+              )}
+
+            </div>
+
+          </div>
+
+          {/* Invoice Card */}
+
+          <div className="w-[320px] rounded-2xl bg-slate-900 p-7 text-white shadow-xl">
+
+            <h2 className="mb-6 text-3xl font-bold">
+
+              {isInvoice
+                ? t(lang, "invoice")
+                : t(lang, "quote")}
+
+            </h2>
+
+            <div className="space-y-3 text-sm">
+
+              <div className="flex justify-between">
+
+                <span className="opacity-80">
+                  {t(lang, "number")}
+                </span>
+
+                <strong>{doc.number}</strong>
+
+              </div>
+
+              <div className="flex justify-between">
+
+                <span className="opacity-80">
+                  {t(lang, "date")}
+                </span>
+
+                <strong>
+                  {formatDate(doc.date, lang)}
+                </strong>
+
+              </div>
+
+              {doc.dueDate && (
+
+                <div className="flex justify-between">
+
+                  <span className="opacity-80">
+                    {t(lang, "dueDate")}
+                  </span>
+
+                  <strong>
+                    {formatDate(doc.dueDate, lang)}
+                  </strong>
+
+                </div>
+
+              )}
+
+              <div className="pt-4">
+
+                <span className="rounded-full bg-white px-4 py-2 text-xs font-bold text-slate-900">
+
+                  {getStatusLabel()}
+
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </header>
