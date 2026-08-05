@@ -284,6 +284,77 @@ export default function ModernTemplate({
     </div>
 
   </section>
+              {/* Items Table */}
+      <section className="overflow-hidden rounded-2xl border border-slate-200">
+
+        <table className="w-full border-collapse">
+
+          <thead className="bg-slate-900 text-white">
+
+            <tr>
+
+              <th className="px-5 py-4 text-left text-sm font-semibold">
+                {t(lang, "description")}
+              </th>
+
+              <th className="px-5 py-4 text-center text-sm font-semibold">
+                {t(lang, "quantity")}
+              </th>
+
+              <th className="px-5 py-4 text-center text-sm font-semibold">
+                {t(lang, "unitPrice")}
+              </th>
+
+              <th className="px-5 py-4 text-center text-sm font-semibold">
+                {t(lang, "tax")}
+              </th>
+
+              <th className="px-5 py-4 text-right text-sm font-semibold">
+                {t(lang, "lineTotal")}
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {items.map((item, index) => (
+
+              <tr
+                key={item.id || index}
+                className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
+              >
+
+                <td className="border-t border-slate-200 px-5 py-4">
+                  {item.description}
+                </td>
+
+                <td className="border-t border-slate-200 px-5 py-4 text-center">
+                  {item.quantity}
+                </td>
+
+                <td className="border-t border-slate-200 px-5 py-4 text-center">
+                  {formatCurrency(Number(item.unitPrice), currency)}
+                </td>
+
+                <td className="border-t border-slate-200 px-5 py-4 text-center">
+                  {doc.taxRate}%
+                </td>
+
+                <td className="border-t border-slate-200 px-5 py-4 text-right font-semibold">
+                  {formatCurrency(Number(item.total), currency)}
+                </td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </section>
 
 </main>
           </div>
