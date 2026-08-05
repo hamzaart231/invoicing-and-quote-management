@@ -426,6 +426,49 @@ export default function ModernTemplate({
         </div>
 
       </section>
+              {/* Notes */}
+      {doc.notes && (
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-700">
+            {t(lang, "notes")}
+          </h3>
+
+          <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600">
+            {doc.notes}
+          </p>
+
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 pt-8 text-center">
+
+        <h3 className="text-lg font-semibold text-slate-900">
+          {company.name}
+        </h3>
+
+        <div className="mt-3 space-y-1 text-sm text-slate-500">
+
+          {company.address && (
+            <p>{company.address}</p>
+          )}
+
+          {company.phone && (
+            <p>{company.phone}</p>
+          )}
+
+          {company.email && (
+            <p>{company.email}</p>
+          )}
+
+          {company.ice && (
+            <p>ICE : {company.ice}</p>
+          )}
+
+        </div>
+
+      </footer>
 
 </main>
           </div>
