@@ -355,6 +355,77 @@ export default function ModernTemplate({
         </table>
 
       </section>
+              {/* Totals */}
+      <section className={`flex ${dir === "rtl" ? "justify-start" : "justify-end"}`}>
+
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+          <div className="rounded-t-2xl bg-slate-900 px-6 py-4 text-lg font-bold text-white">
+            {t(lang, "total")}
+          </div>
+
+          <div className="space-y-4 p-6">
+
+            <div className="flex justify-between">
+
+              <span>{t(lang, "subtotal")}</span>
+
+              <strong>
+                {formatCurrency(Number(subtotal), currency)}
+              </strong>
+
+            </div>
+
+            {discountAmount > 0 && (
+
+              <div className="flex justify-between text-red-600">
+
+                <span>
+                  {t(lang, "discount")}
+                  {doc.discountType === "percentage"
+                    ? ` (${doc.discount}%)`
+                    : ""}
+                </span>
+
+                <strong>
+                  - {formatCurrency(Number(discountAmount), currency)}
+                </strong>
+
+              </div>
+
+            )}
+
+            <div className="flex justify-between">
+
+              <span>
+                {t(lang, "tax")} ({doc.taxRate}%)
+              </span>
+
+              <strong>
+                {formatCurrency(Number(taxAmount), currency)}
+              </strong>
+
+            </div>
+
+            <div className="border-t pt-4">
+
+              <div className="flex justify-between text-2xl font-bold">
+
+                <span>{t(lang, "total")}</span>
+
+                <span>
+                  {formatCurrency(Number(total), currency)}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
 
 </main>
           </div>
