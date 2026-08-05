@@ -42,121 +42,228 @@ export default function DocumentPrint({ doc, company }: DocumentPrintProps) {
       dir={dir}
       style={{ fontFamily: lang === "ar" ? "'Noto Sans Arabic', Arial, sans-serif" : "'Inter', Arial, sans-serif" }}
       className="bg-white min-h-[297mm] print:min-h-0 w-full max-w-[210mm] mx-auto text-gray-800"
-    >
-      {/* Header */}
-      <div className="bg-gray-800 text-white p-8 print:p-6">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1">
-            {company.logo && (
-              <img
-                src={company.logo}
-                alt="logo"
-                className="h-16 w-auto object-contain mb-3 rounded"
-              />
-            )}
-            <h1 className="text-2xl font-bold">{company.name || "شركتك"}</h1>
-            {company.address && <p className="text-sm opacity-80 mt-1">{company.address}</p>}
-            {company.phone && <p className="text-sm opacity-80">{company.phone}</p>}
-            {company.email && <p className="text-sm opacity-80">{company.email}</p>}
-            {company.ice && <p className="text-xs opacity-70 mt-1">ICE: {company.ice}</p>}
-          </div>
+    >{/* Header */}
+<div className="bg-gradient-to-r from-slate-900 to-slate-700 text-white px-10 py-8 print:px-8 rounded-t-xl">
+  <div className="flex justify-between items-start gap-8">
 
-          <div className="text-right rtl:text-left min-w-[180px]">
-            <div className="border-b-2 border-gray-400 pb-2 mb-3 inline-block">
-              <span className="font-semibold text-lg">
-                {isInvoice ? t(lang, "invoice") : t(lang, "quote")}
-              </span>
-            </div>
-            <div>
-              <p className="text-xl font-bold">{doc.number}</p>
-              <p className="text-sm opacity-80">
-                {t(lang, "date")}: {formatDate(doc.date, lang)}
-              </p>
-              {doc.dueDate && (
-                <p className="text-sm opacity-80">
-                  {t(lang, "dueDate")}: {formatDate(doc.dueDate, lang)}
-                </p>
-              )}
-              <span className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-gray-800 text-white opacity-90">
-                {getStatusLabel()}
-              </span>
-            </div>
-          </div>
-        </div>
+    {/* Company */}
+    <div className="flex-1">
+
+      {company.logo && (
+        <img
+          src={company.logo}
+          alt="logo"
+          className="h-20 object-contain mb-4"
+        />
+      )}
+
+      <h1 className="text-3xl font-bold tracking-wide">
+        {company.name || "Company Name"}
+      </h1>
+
+      <div className="mt-4 space-y-1 text-sm opacity-90">
+
+        {company.address && (
+          <p>{company.address}</p>
+        )}
+
+        {company.phone && (
+          <p>☎ {company.phone}</p>
+        )}
+
+        {company.email && (
+          <p>✉ {company.email}</p>
+        )}
+
+        {company.ice && (
+          <p>ICE : {company.ice}</p>
+        )}
+
       </div>
 
-      {/* Items Table */}
-      <div className="px-8 py-5 print:px-6">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-gray-800 text-white">
-              <th className={`px-3 py-3 ${dir === "rtl" ? "text-right" : "text-left"} font-semibold`}>
-                {t(lang, "description")}
-              </th>
-              <th className="px-3 py-3 text-center font-semibold">{t(lang, "quantity")}</th>
-              <th className="px-3 py-3 text-center font-semibold">{t(lang, "unitPrice")}</th>
-              <th className={`px-3 py-3 ${dir === "rtl" ? "text-left" : "text-right"} font-semibold`}>
-                {t(lang, "lineTotal")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, idx) => (
-              <tr key={item.id || idx}>
-                <td className={`px-3 py-3 ${dir === "rtl" ? "text-right" : "text-left"}`}>
-                  {item.description}
-                </td>
-                <td className="px-3 py-3 text-center">{item.quantity}</td>
-                <td className="px-3 py-3 text-center">
-                  {formatCurrency(Number(item.unitPrice), currency)}
-                </td>
-                <td className={`px-3 py-3 ${dir === "rtl" ? "text-left" : "text-right"} font-medium`}>
-                  {formatCurrency(Number(item.total), currency)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    </div>
 
-        {/* Totals */}
-        <div className={`mt-6 ${dir === "rtl" ? "mr-auto" : "ml-auto"} max-w-xs`}>
-          <div className="border-t pt-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>{t(lang, "subtotal")}</span>
-              <span className="font-medium">
-                {formatCurrency(Number(subtotal), currency)}
-              </span>
-            </div>
+    {/* Invoice Info */}
+    <div className="bg-white text-slate-800 rounded-xl p-6 min-w-[270px] shadow-lg">
 
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-sm text-red-600">
-                <span>
-                  {t(lang, "discount")}{" "}
-                  {doc.discountType === "percentage" ? `(${doc.discount}%)` : ""}
-                </span>
-                <span>
-                  - {formatCurrency(Number(discountAmount), currency)}
-                </span>
-              </div>
-            )}
+      <h2 className="text-2xl font-bold mb-4 text-center">
 
-            <div className="flex justify-between text-sm">
-              <span>{t(lang, "tax")} ({doc.taxRate}%)</span>
-              <span className="font-medium">
-                {formatCurrency(Number(taxAmount), currency)}
-              </span>
-            </div>
+        {isInvoice
+          ? t(lang, "invoice")
+          : t(lang, "quote")}
 
-            <div className="border-t pt-2 flex justify-between">
-              <span className="font-bold text-base">
-                {t(lang, "total")}
-              </span>
-              <span className="font-bold text-base">
-                {formatCurrency(Number(total), currency)}
-              </span>
-            </div>
-          </div>
+      </h2>
+
+      <div className="space-y-2 text-sm">
+
+        <div className="flex justify-between">
+          <span className="font-semibold">
+            {t(lang, "number")}
+          </span>
+          <span>{doc.number}</span>
         </div>
+
+        <div className="flex justify-between">
+          <span className="font-semibold">
+            {t(lang, "date")}
+          </span>
+          <span>
+            {formatDate(doc.date, lang)}
+          </span>
+        </div>
+
+        {doc.dueDate && (
+
+          <div className="flex justify-between">
+
+            <span className="font-semibold">
+              {t(lang, "dueDate")}
+            </span>
+
+            <span>
+              {formatDate(doc.dueDate, lang)}
+            </span>
+
+          </div>
+
+        )}
+
+        <div className="pt-3">
+
+          <span className="inline-block px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-bold">
+
+            {getStatusLabel()}
+
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+      {/* Items Table */}
+      <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden text-sm">
+
+  <thead>
+
+    <tr className="bg-slate-800 text-white">
+
+      <th className="border border-gray-300 px-4 py-3 text-left font-bold">
+        {t(lang,"description")}
+      </th>
+
+      <th className="border border-gray-300 px-4 py-3 text-center font-bold">
+        {t(lang,"quantity")}
+      </th>
+
+      <th className="border border-gray-300 px-4 py-3 text-center font-bold">
+        {t(lang,"unitPrice")}
+      </th>
+
+      <th className="border border-gray-300 px-4 py-3 text-center font-bold">
+        {t(lang,"tax")}
+      </th>
+
+      <th className="border border-gray-300 px-4 py-3 text-right font-bold">
+        {t(lang,"lineTotal")}
+      </th>
+
+    </tr>
+
+  </thead>
+
+  <tbody>
+
+    {items.map((item,index)=>(
+
+      <tr
+        key={item.id || index}
+        className={
+          index%2===0
+          ? "bg-white"
+          : "bg-gray-50"
+        }
+      >
+
+        <td className="border border-gray-200 px-4 py-3">
+          {item.description}
+        </td>
+
+        <td className="border border-gray-200 text-center">
+          {item.quantity}
+        </td>
+
+        <td className="border border-gray-200 text-center">
+          {formatCurrency(Number(item.unitPrice),currency)}
+        </td>
+
+        <td className="border border-gray-200 text-center">
+          {doc.taxRate}%
+        </td>
+
+        <td className="border border-gray-200 text-right font-semibold">
+          {formatCurrency(Number(item.total),currency)}
+        </td>
+
+      </tr>
+
+    ))}
+
+  </tbody>
+
+</table>
+
+      {/* Totals */}
+<div className={`mt-8 flex ${dir === "rtl" ? "justify-start" : "justify-end"}`}>
+
+  <div className="w-full max-w-md border rounded-xl shadow-sm overflow-hidden">
+
+    <div className="bg-slate-800 text-white px-5 py-3 font-bold text-lg">
+      {t(lang, "total")}
+    </div>
+
+    <div className="bg-white p-5 space-y-3">
+
+      <div className="flex justify-between">
+        <span>{t(lang, "subtotal")}</span>
+        <strong>{formatCurrency(Number(subtotal), currency)}</strong>
+      </div>
+
+      {discountAmount > 0 && (
+        <div className="flex justify-between text-red-600">
+          <span>
+            {t(lang, "discount")}
+          </span>
+          <strong>
+            - {formatCurrency(Number(discountAmount), currency)}
+          </strong>
+        </div>
+      )}
+
+      <div className="flex justify-between">
+        <span>
+          {t(lang, "tax")} ({doc.taxRate}%)
+        </span>
+        <strong>
+          {formatCurrency(Number(taxAmount), currency)}
+        </strong>
+      </div>
+
+      <hr />
+
+      <div className="flex justify-between text-2xl font-bold text-slate-900">
+        <span>{t(lang, "total")}</span>
+        <span>{formatCurrency(Number(total), currency)}</span>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 
         {/* Notes */}
         {doc.notes && (
