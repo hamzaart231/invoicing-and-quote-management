@@ -183,3 +183,11 @@ export default function ModernTemplate({
 
         </div>
       </header>
+      <main className="px-10 py-8">
+        <p className="text-slate-500">
+          Modern template under development...
+        </p>
+      </main>
+    </div>
+  );
+}
