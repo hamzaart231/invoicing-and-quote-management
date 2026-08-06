@@ -1,4 +1,5 @@
 "use client";
+// Classic invoice template
 
 import React from "react";
 
