@@ -160,3 +160,6 @@ export default function ClassicTemplate({
   </header>
 
 </div>
+          </div>
+  );
+      }
