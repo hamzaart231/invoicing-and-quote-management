@@ -227,6 +227,93 @@ export default function ClassicTemplate({
         </div>
 
       </section>
+              {/* Items Table */}
+      <section className="mt-8">
+
+        <table className="w-full border-collapse text-sm">
+
+          <thead>
+            <tr className="bg-slate-700 text-white">
+
+              <th
+                className={`border border-slate-500 px-4 py-3 font-bold ${
+                  dir === "rtl" ? "text-right" : "text-left"
+                }`}
+              >
+                {t(lang, "description")}
+              </th>
+
+              <th className="border border-slate-500 px-4 py-3 text-center font-bold">
+                {t(lang, "quantity")}
+              </th>
+
+              <th className="border border-slate-500 px-4 py-3 text-center font-bold">
+                {t(lang, "unitPrice")}
+              </th>
+
+              <th className="border border-slate-500 px-4 py-3 text-center font-bold">
+                {t(lang, "tax")}
+              </th>
+
+              <th
+                className={`border border-slate-500 px-4 py-3 font-bold ${
+                  dir === "rtl" ? "text-left" : "text-right"
+                }`}
+              >
+                {t(lang, "lineTotal")}
+              </th>
+
+            </tr>
+          </thead>
+
+          <tbody>
+            {items.map((item, index) => (
+              <tr
+                key={item.id || index}
+                className="bg-white"
+              >
+
+                <td
+                  className={`border border-slate-300 px-4 py-3 ${
+                    dir === "rtl" ? "text-right" : "text-left"
+                  }`}
+                >
+                  {item.description}
+                </td>
+
+                <td className="border border-slate-300 px-4 py-3 text-center">
+                  {item.quantity}
+                </td>
+
+                <td className="border border-slate-300 px-4 py-3 text-center">
+                  {formatCurrency(
+                    Number(item.unitPrice),
+                    currency
+                  )}
+                </td>
+
+                <td className="border border-slate-300 px-4 py-3 text-center">
+                  {doc.taxRate}%
+                </td>
+
+                <td
+                  className={`border border-slate-300 px-4 py-3 font-semibold ${
+                    dir === "rtl" ? "text-left" : "text-right"
+                  }`}
+                >
+                  {formatCurrency(
+                    Number(item.total),
+                    currency
+                  )}
+                </td>
+
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+
+      </section>
 
 </div>
           </div>
