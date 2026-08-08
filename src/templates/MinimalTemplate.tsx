@@ -261,6 +261,101 @@ export default function MinimalTemplate({
           </div>
 
         </section>
+                {/* Items */}
+        <section className="py-8">
+
+          <table className="w-full border-collapse text-sm">
+
+            <thead>
+              <tr className="border-b-2 border-slate-900">
+
+                <th
+                  className={`py-3 font-semibold ${
+                    dir === "rtl"
+                      ? "text-right"
+                      : "text-left"
+                  }`}
+                >
+                  {t(lang, "description")}
+                </th>
+
+                <th className="px-3 py-3 text-center font-semibold">
+                  {t(lang, "quantity")}
+                </th>
+
+                <th className="px-3 py-3 text-center font-semibold">
+                  {t(lang, "unitPrice")}
+                </th>
+
+                <th className="px-3 py-3 text-center font-semibold">
+                  {t(lang, "tax")}
+                </th>
+
+                <th
+                  className={`py-3 font-semibold ${
+                    dir === "rtl"
+                      ? "text-left"
+                      : "text-right"
+                  }`}
+                >
+                  {t(lang, "lineTotal")}
+                </th>
+
+              </tr>
+            </thead>
+
+            <tbody>
+              {items.map((item, index) => (
+                <tr
+                  key={item.id || index}
+                  className="border-b border-slate-200"
+                >
+
+                  <td
+                    className={`py-4 ${
+                      dir === "rtl"
+                        ? "text-right"
+                        : "text-left"
+                    }`}
+                  >
+                    {item.description}
+                  </td>
+
+                  <td className="px-3 py-4 text-center text-slate-600">
+                    {item.quantity}
+                  </td>
+
+                  <td className="px-3 py-4 text-center text-slate-600">
+                    {formatCurrency(
+                      Number(item.unitPrice),
+                      currency
+                    )}
+                  </td>
+
+                  <td className="px-3 py-4 text-center text-slate-600">
+                    {doc.taxRate}%
+                  </td>
+
+                  <td
+                    className={`py-4 font-medium ${
+                      dir === "rtl"
+                        ? "text-left"
+                        : "text-right"
+                    }`}
+                  >
+                    {formatCurrency(
+                      Number(item.total),
+                      currency
+                    )}
+                  </td>
+
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+
+        </section>
 
       </div>
     </div>
