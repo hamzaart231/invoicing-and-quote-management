@@ -183,6 +183,84 @@ export default function MinimalTemplate({
           </div>
 
         </header>
+                {/* Client */}
+        <section className="grid grid-cols-2 gap-12 border-b border-slate-200 py-8">
+
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              {t(lang, "client")}
+            </p>
+
+            <h3 className="text-lg font-medium text-slate-900">
+              {doc.clientName}
+            </h3>
+
+            <div className="mt-3 space-y-1 text-sm leading-6 text-slate-500">
+
+              {doc.clientAddress && (
+                <p>{doc.clientAddress}</p>
+              )}
+
+              {doc.clientPhone && (
+                <p>{doc.clientPhone}</p>
+              )}
+
+              {doc.clientEmail && (
+                <p>{doc.clientEmail}</p>
+              )}
+
+            </div>
+          </div>
+
+          <div>
+            <div className="space-y-3 text-sm">
+
+              <div className="flex justify-between gap-8">
+                <span className="text-slate-400">
+                  {t(lang, "number")}
+                </span>
+
+                <span className="font-medium">
+                  {doc.number}
+                </span>
+              </div>
+
+              <div className="flex justify-between gap-8">
+                <span className="text-slate-400">
+                  {t(lang, "date")}
+                </span>
+
+                <span className="font-medium">
+                  {formatDate(doc.date, lang)}
+                </span>
+              </div>
+
+              {doc.dueDate && (
+                <div className="flex justify-between gap-8">
+                  <span className="text-slate-400">
+                    {t(lang, "dueDate")}
+                  </span>
+
+                  <span className="font-medium">
+                    {formatDate(doc.dueDate, lang)}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex justify-between gap-8">
+                <span className="text-slate-400">
+                  {t(lang, "status")}
+                </span>
+
+                <span className="font-medium">
+                  {getStatusLabel()}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
 
       </div>
     </div>
