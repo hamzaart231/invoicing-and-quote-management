@@ -373,6 +373,65 @@ export default function ClassicTemplate({
 
         </div>
       </section>
+              {/* Totals */}
+      <section
+        className={`mt-8 flex ${
+          dir === "rtl" ? "justify-start" : "justify-end"
+        }`}
+      >
+        <div className="w-full max-w-sm text-sm">
+
+          {/* Subtotal */}
+          <div className="flex justify-between border-b border-slate-300 px-4 py-3">
+            <span className="font-semibold">
+              {t(lang, "subtotal")}
+            </span>
+
+            <span>
+              {formatCurrency(Number(subtotal), currency)}
+            </span>
+          </div>
+
+          {/* Discount */}
+          {discountAmount > 0 && (
+            <div className="flex justify-between border-b border-slate-300 px-4 py-3">
+              <span>
+                {t(lang, "discount")}
+                {doc.discountType === "percentage"
+                  ? ` (${doc.discount}%)`
+                  : ""}
+              </span>
+
+              <span>
+                - {formatCurrency(Number(discountAmount), currency)}
+              </span>
+            </div>
+          )}
+
+          {/* Tax */}
+          <div className="flex justify-between border-b border-slate-300 px-4 py-3">
+            <span>
+              {t(lang, "tax")} ({doc.taxRate}%)
+            </span>
+
+            <span>
+              {formatCurrency(Number(taxAmount), currency)}
+            </span>
+          </div>
+
+          {/* Grand Total */}
+          <div className="flex justify-between bg-slate-700 px-4 py-4 text-lg font-bold text-white">
+            <span>
+              {t(lang, "total")}
+            </span>
+
+            <span>
+              {formatCurrency(Number(total), currency)}
+            </span>
+          </div>
+
+        </div>
+      </section>
 
 </div>
           </div>
