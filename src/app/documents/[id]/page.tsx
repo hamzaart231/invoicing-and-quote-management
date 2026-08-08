@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+
 import {
   ArrowLeft,
   Edit2,
@@ -10,8 +11,14 @@ import {
   Trash2,
 } from "lucide-react";
 
+import {
+  Capacitor,
+  registerPlugin,
+} from "@capacitor/core";
+
 import { useLang } from "@/lib/LanguageContext";
 import { t } from "@/lib/i18n";
+
 import {
   DocumentData,
   CompanyData,
@@ -19,8 +26,30 @@ import {
 
 import DocumentPrint from "@/components/DocumentPrint";
 
+/* =========================================
+   Native Android Print Plugin
+========================================= */
+
+interface NativePrintPlugin {
+  print(options: {
+    name: string;
+  }): Promise<{
+    success: boolean;
+  }>;
+}
+
+const NativePrint =
+  registerPlugin<NativePrintPlugin>(
+    "NativePrint"
+  );
+
+/* =========================================
+   Page
+========================================= */
+
 export default function DocumentViewPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id } =
+    useParams<{ id: string }>();
 
   const { lang } = useLang();
 
@@ -43,28 +72,40 @@ export default function DocumentViewPage() {
   const [loading, setLoading] =
     useState(true);
 
-  /*
-   * Load document and company
-   */
+  const [printing, setPrinting] =
+    useState(false);
+
+  /* =========================================
+     Load document + company
+  ========================================= */
+
   useEffect(() => {
     Promise.all([
-      fetch(`/api/documents/${id}`).then(
-        (response) => response.json()
-      ),
+      fetch(`/api/documents/${id}`)
+        .then((response) =>
+          response.json()
+        ),
 
-      fetch("/api/company").then(
-        (response) => response.json()
-      ),
+      fetch("/api/company")
+        .then((response) =>
+          response.json()
+        ),
     ])
-      .then(([docData, companyData]) => {
-        setDoc(docData.document ?? null);
+      .then(
+        ([docData, companyData]) => {
+          setDoc(
+            docData.document ?? null
+          );
 
-        if (companyData.company) {
-          setCompany(companyData.company);
+          if (companyData.company) {
+            setCompany(
+              companyData.company
+            );
+          }
+
+          setLoading(false);
         }
-
-        setLoading(false);
-      })
+      )
       .catch((error) => {
         console.error(
           "Failed to load document:",
@@ -75,27 +116,74 @@ export default function DocumentViewPage() {
       });
   }, [id]);
 
-  /*
-   * Print
-   *
-   * Important:
-   * Do NOT use window.open().
-   *
-   * Capacitor / Android may interpret
-   * a new window as an external URL
-   * and open Chrome.
-   *
-   * Printing the current document also
-   * keeps the Tailwind CSS already
-   * compiled by Next.js.
-   */
-  const handlePrint = () => {
-    window.print();
+  /* =========================================
+     Print
+
+     Android / Capacitor:
+       Native Android PrintManager
+
+     Browser / Vercel / Electron:
+       window.print()
+  ========================================= */
+
+  const handlePrint = async () => {
+    if (printing) {
+      return;
+    }
+
+    setPrinting(true);
+
+    try {
+      /*
+       * Capacitor native application
+       */
+      if (
+        Capacitor.isNativePlatform()
+      ) {
+        await NativePrint.print({
+          name: doc?.number
+            ? `${
+                doc.type === "invoice"
+                  ? "Invoice"
+                  : "Quote"
+              } ${doc.number}`
+            : "Document",
+        });
+
+        return;
+      }
+
+      /*
+       * Browser / Vercel / Electron
+       */
+      window.print();
+    } catch (error) {
+      console.error(
+        "Print failed:",
+        error
+      );
+
+      /*
+       * Fallback for normal browsers.
+       *
+       * We deliberately do not use
+       * window.open() because Android
+       * may open Chrome externally.
+       */
+      if (
+        !Capacitor.isNativePlatform()
+      ) {
+        window.print();
+      }
+    } finally {
+      setPrinting(false);
+    }
   };
 
-  /*
-   * Delete document
-   */
+  /* =========================================
+     Delete document
+  ========================================= */
+
   const handleDelete = async () => {
     if (
       !window.confirm(
@@ -115,9 +203,10 @@ export default function DocumentViewPage() {
     router.push("/documents");
   };
 
-  /*
-   * Loading
-   */
+  /* =========================================
+     Loading
+  ========================================= */
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -126,9 +215,10 @@ export default function DocumentViewPage() {
     );
   }
 
-  /*
-   * Document not found
-   */
+  /* =========================================
+     Document not found
+  ========================================= */
+
   if (!doc) {
     return (
       <div className="py-16 text-center text-gray-400">
@@ -137,9 +227,16 @@ export default function DocumentViewPage() {
     );
   }
 
+  /* =========================================
+     Render
+  ========================================= */
+
   return (
     <>
-      {/* Print configuration */}
+      {/* =====================================
+          PRINT CSS
+      ====================================== */}
+
       <style jsx global>{`
         @page {
           size: A4;
@@ -151,14 +248,11 @@ export default function DocumentViewPage() {
           body {
             margin: 0 !important;
             padding: 0 !important;
-            background: white !important;
+            background: #ffffff !important;
           }
 
-          body {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
+          html,
+          body,
           * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -171,22 +265,24 @@ export default function DocumentViewPage() {
           .document-page {
             width: 210mm !important;
             max-width: 210mm !important;
-            min-height: 297mm;
+            min-height: 297mm !important;
+
             margin: 0 auto !important;
             padding: 0 !important;
 
             border: 0 !important;
             border-radius: 0 !important;
+
             box-shadow: none !important;
 
             overflow: visible !important;
 
-            background: white !important;
+            background: #ffffff !important;
           }
 
           .document-page table {
-            width: 100%;
-            border-collapse: collapse;
+            width: 100% !important;
+            border-collapse: collapse !important;
           }
 
           .document-page thead {
@@ -197,7 +293,11 @@ export default function DocumentViewPage() {
             display: table-footer-group;
           }
 
-          .document-page tr,
+          .document-page tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
           .document-page td,
           .document-page th {
             break-inside: avoid;
@@ -210,16 +310,26 @@ export default function DocumentViewPage() {
         }
       `}</style>
 
+      {/* =====================================
+          PAGE
+      ====================================== */}
+
       <div className="mx-auto max-w-5xl px-4 py-6 print:m-0 print:max-w-none print:p-0">
 
-        {/* Toolbar */}
+        {/* =================================
+            TOOLBAR
+        ================================== */}
+
         <div className="no-print mb-6 flex flex-wrap items-center gap-3">
 
           {/* Back */}
+
           <button
             type="button"
             onClick={() =>
-              router.push("/documents")
+              router.push(
+                "/documents"
+              )
             }
             className="rounded-lg border border-gray-200 bg-white p-2 transition hover:bg-gray-50"
           >
@@ -233,12 +343,14 @@ export default function DocumentViewPage() {
             />
           </button>
 
-          {/* Number */}
+          {/* Document Number */}
+
           <h1 className="flex-1 text-xl font-bold text-gray-900">
             {doc.number}
           </h1>
 
           {/* Edit */}
+
           <Link
             href={`/documents/${id}/edit`}
             className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium transition hover:bg-gray-50"
@@ -249,17 +361,22 @@ export default function DocumentViewPage() {
           </Link>
 
           {/* Print */}
+
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-900"
+            disabled={printing}
+            className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Printer size={16} />
 
-            {t(lang, "print")}
+            {printing
+              ? "..."
+              : t(lang, "print")}
           </button>
 
           {/* Delete */}
+
           <button
             type="button"
             onClick={handleDelete}
@@ -272,7 +389,10 @@ export default function DocumentViewPage() {
 
         </div>
 
-        {/* Printable Document */}
+        {/* =================================
+            PRINTABLE DOCUMENT
+        ================================== */}
+
         <div
           id="print-doc"
           className="document-page overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
@@ -286,4 +406,4 @@ export default function DocumentViewPage() {
       </div>
     </>
   );
-            }
+      }
