@@ -2,6 +2,7 @@ name: Build Android App
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
@@ -38,18 +39,119 @@ jobs:
           mkdir -p out
           echo "<html><body>Loading...</body></html>" > out/index.html
 
-      - name: Add Android platform (if missing)
+      - name: Add Android platform
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
           fi
+
+      - name: Create native print plugin
+        run: |
+          PACKAGE_DIR="android/app/src/main/java/com/hamzaart231/invoicingapp"
+
+          mkdir -p "$PACKAGE_DIR"
+
+          cat > "$PACKAGE_DIR/PrintPlugin.java" <<'EOF'
+          package com.hamzaart231.invoicingapp;
+
+          import android.content.Context;
+          import android.print.PrintAttributes;
+          import android.print.PrintDocumentAdapter;
+          import android.print.PrintManager;
+          import android.webkit.WebView;
+
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+
+          @CapacitorPlugin(name = "NativePrint")
+          public class PrintPlugin extends Plugin {
+
+              @PluginMethod
+              public void print(PluginCall call) {
+                  getActivity().runOnUiThread(() -> {
+                      try {
+                          WebView webView =
+                              (WebView) getBridge().getWebView();
+
+                          PrintManager printManager =
+                              (PrintManager) getActivity()
+                                  .getSystemService(Context.PRINT_SERVICE);
+
+                          String jobName =
+                              call.getString(
+                                  "name",
+                                  "Invoice"
+                              );
+
+                          PrintDocumentAdapter printAdapter =
+                              webView.createPrintDocumentAdapter(
+                                  jobName
+                              );
+
+                          PrintAttributes attributes =
+                              new PrintAttributes.Builder()
+                                  .setMediaSize(
+                                      PrintAttributes.MediaSize.ISO_A4
+                                  )
+                                  .setColorMode(
+                                      PrintAttributes.COLOR_MODE_COLOR
+                                  )
+                                  .build();
+
+                          printManager.print(
+                              jobName,
+                              printAdapter,
+                              attributes
+                          );
+
+                          JSObject result = new JSObject();
+                          result.put("success", true);
+
+                          call.resolve(result);
+
+                      } catch (Exception error) {
+                          call.reject(
+                              "Unable to start printing",
+                              error
+                          );
+                      }
+                  });
+              }
+          }
+          EOF
+
+      - name: Register native print plugin
+        run: |
+          MAIN_ACTIVITY="android/app/src/main/java/com/hamzaart231/invoicingapp/MainActivity.java"
+
+          cat > "$MAIN_ACTIVITY" <<'EOF'
+          package com.hamzaart231.invoicingapp;
+
+          import android.os.Bundle;
+
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  registerPlugin(PrintPlugin.class);
+                  super.onCreate(savedInstanceState);
+              }
+          }
+          EOF
 
       - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Build APK
         working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
