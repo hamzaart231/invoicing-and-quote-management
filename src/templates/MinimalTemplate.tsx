@@ -356,6 +356,116 @@ export default function MinimalTemplate({
           </table>
 
         </section>
+                {/* Totals */}
+        <section
+          className={`flex ${
+            dir === "rtl"
+              ? "justify-start"
+              : "justify-end"
+          }`}
+        >
+          <div className="w-full max-w-sm text-sm">
+
+            <div className="flex justify-between py-2">
+              <span className="text-slate-500">
+                {t(lang, "subtotal")}
+              </span>
+
+              <span>
+                {formatCurrency(
+                  Number(subtotal),
+                  currency
+                )}
+              </span>
+            </div>
+
+            {discountAmount > 0 && (
+              <div className="flex justify-between py-2">
+                <span className="text-slate-500">
+                  {t(lang, "discount")}
+                  {doc.discountType === "percentage"
+                    ? ` (${doc.discount}%)`
+                    : ""}
+                </span>
+
+                <span>
+                  -{" "}
+                  {formatCurrency(
+                    Number(discountAmount),
+                    currency
+                  )}
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-between py-2">
+              <span className="text-slate-500">
+                {t(lang, "tax")} ({doc.taxRate}%)
+              </span>
+
+              <span>
+                {formatCurrency(
+                  Number(taxAmount),
+                  currency
+                )}
+              </span>
+            </div>
+
+            <div className="mt-2 flex justify-between border-t-2 border-slate-900 py-4 text-xl font-semibold">
+              <span>
+                {t(lang, "total")}
+              </span>
+
+              <span>
+                {formatCurrency(
+                  Number(total),
+                  currency
+                )}
+              </span>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Notes */}
+        {doc.notes && (
+          <section className="mt-10 border-t border-slate-200 pt-6">
+
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              {t(lang, "notes")}
+            </p>
+
+            <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600">
+              {doc.notes}
+            </p>
+
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-12 border-t border-slate-200 pt-5 text-center text-xs text-slate-400">
+
+          <p className="font-medium text-slate-600">
+            {company.name}
+          </p>
+
+          <p className="mt-2">
+            {[
+              company.address,
+              company.phone,
+              company.email,
+            ]
+              .filter(Boolean)
+              .join(" • ")}
+          </p>
+
+          {company.ice && (
+            <p className="mt-1">
+              ICE: {company.ice}
+            </p>
+          )}
+
+        </footer>
 
       </div>
     </div>
