@@ -159,6 +159,74 @@ export default function ClassicTemplate({
     </div>
 
   </header>
+              {/* Client Details */}
+      <section className="mt-8 grid grid-cols-2 gap-10 border-b border-slate-300 pb-8">
+
+        <div>
+          <h3 className="mb-3 border-b border-slate-400 pb-2 text-sm font-bold uppercase tracking-wider text-slate-700">
+            {t(lang, "client")}
+          </h3>
+
+          <p className="text-lg font-bold">
+            {doc.clientName}
+          </p>
+
+          <div className="mt-3 space-y-1 text-sm text-slate-700">
+            {doc.clientAddress && (
+              <p>{doc.clientAddress}</p>
+            )}
+
+            {doc.clientPhone && (
+              <p>{doc.clientPhone}</p>
+            )}
+
+            {doc.clientEmail && (
+              <p>{doc.clientEmail}</p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-3 border-b border-slate-400 pb-2 text-sm font-bold uppercase tracking-wider text-slate-700">
+            {isInvoice
+              ? t(lang, "invoice")
+              : t(lang, "quote")}
+          </h3>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between gap-6">
+              <span className="font-bold">
+                {t(lang, "number")}
+              </span>
+              <span>{doc.number}</span>
+            </div>
+
+            <div className="flex justify-between gap-6">
+              <span className="font-bold">
+                {t(lang, "date")}
+              </span>
+              <span>{formatDate(doc.date, lang)}</span>
+            </div>
+
+            {doc.dueDate && (
+              <div className="flex justify-between gap-6">
+                <span className="font-bold">
+                  {t(lang, "dueDate")}
+                </span>
+                <span>{formatDate(doc.dueDate, lang)}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between gap-6">
+              <span className="font-bold">
+                {t(lang, "status")}
+              </span>
+              <span>{getStatusLabel()}</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
 
 </div>
           </div>
