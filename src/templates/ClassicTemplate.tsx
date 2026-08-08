@@ -432,6 +432,43 @@ export default function ClassicTemplate({
 
         </div>
       </section>
+              {/* Notes */}
+      {doc.notes && (
+        <section className="mt-10 border-t border-slate-300 pt-6">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-700">
+            {t(lang, "notes")}
+          </h3>
+
+          <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+            {doc.notes}
+          </p>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="mt-12 border-t-2 border-slate-700 pt-5 text-center text-xs text-slate-600">
+
+        <p className="font-bold text-slate-800">
+          {company.name}
+        </p>
+
+        <p className="mt-2">
+          {[
+            company.address,
+            company.phone,
+            company.email,
+          ]
+            .filter(Boolean)
+            .join(" • ")}
+        </p>
+
+        {company.ice && (
+          <p className="mt-1">
+            ICE: {company.ice}
+          </p>
+        )}
+
+      </footer>
 
 </div>
           </div>
