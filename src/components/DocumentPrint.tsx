@@ -1,10 +1,14 @@
 "use client";
 
-import { CompanyData, DocumentData } from "@/lib/types";
+import {
+  CompanyData,
+  DocumentData,
+} from "@/lib/types";
 
 import {
   ModernTemplate,
   ClassicTemplate,
+  ElegantTemplate,
   MinimalTemplate,
 } from "@/templates";
 
@@ -18,6 +22,7 @@ export default function DocumentPrint({
   company,
 }: DocumentPrintProps) {
   switch (doc.template) {
+
     case "classic":
       return (
         <ClassicTemplate
@@ -34,6 +39,14 @@ export default function DocumentPrint({
         />
       );
 
+    case "elegant":
+      return (
+        <ElegantTemplate
+          doc={doc}
+          company={company}
+        />
+      );
+
     case "modern":
     default:
       return (
@@ -43,4 +56,4 @@ export default function DocumentPrint({
         />
       );
   }
-}
+        }
