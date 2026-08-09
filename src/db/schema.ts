@@ -1,4 +1,43 @@
-import { pgTable, text, integer, decimal, timestamp, boolean, jsonb, serial } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  integer,
+  decimal,
+  timestamp,
+  jsonb,
+  serial,
+} from "drizzle-orm/pg-core";
+
+/* =========================
+   USERS TABLE
+========================= */
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+
+  name: text("name")
+    .notNull()
+    .default(""),
+
+  email: text("email")
+    .notNull()
+    .unique(),
+
+  /*
+   * Never store the original password.
+   * Only the password hash is stored.
+   */
+  passwordHash: text("password_hash")
+    .notNull(),
+
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
+
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull(),
+});
 
 /* =========================
    COMPANY TABLE
@@ -6,18 +45,40 @@ import { pgTable, text, integer, decimal, timestamp, boolean, jsonb, serial } fr
 
 export const company = pgTable("company", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull().default(""),
-  address: text("address").notNull().default(""),
-  phone: text("phone").notNull().default(""),
-  email: text("email").notNull().default(""),
-  ice: text("ice").notNull().default(""),
-  logo: text("logo").default(""),
 
-  // ✅ العملة الافتراضية للشركة
-  currency: text("currency").notNull().default("USD"),
+  name: text("name")
+    .notNull()
+    .default(""),
 
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  address: text("address")
+    .notNull()
+    .default(""),
+
+  phone: text("phone")
+    .notNull()
+    .default(""),
+
+  email: text("email")
+    .notNull()
+    .default(""),
+
+  ice: text("ice")
+    .notNull()
+    .default(""),
+
+  logo: text("logo")
+    .default(""),
+
+  // Default company currency
+  currency: text("currency")
+    .notNull()
+    .default("USD"),
+
+  createdAt: timestamp("created_at")
+    .defaultNow(),
+
+  updatedAt: timestamp("updated_at")
+    .defaultNow(),
 });
 
 /* =========================
@@ -26,11 +87,22 @@ export const company = pgTable("company", {
 
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  phone: text("phone").notNull().default(""),
-  email: text("email").default(""),
-  address: text("address").default(""),
-  createdAt: timestamp("created_at").defaultNow(),
+
+  name: text("name")
+    .notNull(),
+
+  phone: text("phone")
+    .notNull()
+    .default(""),
+
+  email: text("email")
+    .default(""),
+
+  address: text("address")
+    .default(""),
+
+  createdAt: timestamp("created_at")
+    .defaultNow(),
 });
 
 /* =========================
@@ -39,58 +111,163 @@ export const clients = pgTable("clients", {
 
 export const documents = pgTable("documents", {
   id: serial("id").primaryKey(),
-  type: text("type").notNull(), // 'invoice' | 'quote'
-  number: text("number").notNull().unique(),
-  date: text("date").notNull(),
-  dueDate: text("due_date").default(""),
 
-  clientName: text("client_name").notNull().default(""),
-  clientPhone: text("client_phone").default(""),
-  clientEmail: text("client_email").default(""),
-  clientAddress: text("client_address").default(""),
+  type: text("type")
+    .notNull(),
 
-  items: jsonb("items").notNull().default([]),
+  number: text("number")
+    .notNull()
+    .unique(),
 
-  taxRate: decimal("tax_rate", { precision: 5, scale: 2 })
+  date: text("date")
+    .notNull(),
+
+  dueDate: text("due_date")
+    .default(""),
+
+  /* =====================
+     Client snapshot
+  ===================== */
+
+  clientName: text("client_name")
+    .notNull()
+    .default(""),
+
+  clientPhone: text("client_phone")
+    .default(""),
+
+  clientEmail: text("client_email")
+    .default(""),
+
+  clientAddress: text("client_address")
+    .default(""),
+
+  /* =====================
+     Items
+  ===================== */
+
+  items: jsonb("items")
+    .notNull()
+    .default([]),
+
+  /* =====================
+     Tax
+  ===================== */
+
+  taxRate: decimal(
+    "tax_rate",
+    {
+      precision: 5,
+      scale: 2,
+    }
+  )
     .notNull()
     .default("20"),
 
-  discount: decimal("discount", { precision: 10, scale: 2 })
+  /* =====================
+     Discount
+  ===================== */
+
+  discount: decimal(
+    "discount",
+    {
+      precision: 10,
+      scale: 2,
+    }
+  )
     .notNull()
     .default("0"),
 
-  discountType: text("discount_type")
+  discountType: text(
+    "discount_type"
+  )
     .notNull()
-    .default("fixed"), // 'fixed' | 'percent'
+    .default("fixed"),
+
+  /* =====================
+     Status
+  ===================== */
 
   status: text("status")
     .notNull()
     .default("draft"),
 
+  /* =====================
+     Template
+  ===================== */
+
   template: text("template")
     .notNull()
-    .default("classic"), // 'classic' | 'modern' | 'minimal'
+    .default("classic"),
+
+  /* =====================
+     Language
+  ===================== */
 
   language: text("language")
     .notNull()
-    .default("ar"), // 'ar' | 'fr' | 'en'
+    .default("ar"),
 
-  // ✅ عملة خاصة بالفاتورة (احترافي)
-  currency: text("currency").notNull().default("USD"),
+  /* =====================
+     Currency
+  ===================== */
 
-  notes: text("notes").default(""),
-  convertedFrom: integer("converted_from").default(0),
+  currency: text("currency")
+    .notNull()
+    .default("USD"),
 
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  /* =====================
+     Notes
+  ===================== */
+
+  notes: text("notes")
+    .default(""),
+
+  /* =====================
+     Quote conversion
+  ===================== */
+
+  convertedFrom: integer(
+    "converted_from"
+  )
+    .default(0),
+
+  /* =====================
+     Timestamps
+  ===================== */
+
+  createdAt: timestamp(
+    "created_at"
+  )
+    .defaultNow(),
+
+  updatedAt: timestamp(
+    "updated_at"
+  )
+    .defaultNow(),
 });
 
 /* =========================
    TYPES
 ========================= */
 
-export type Company = typeof company.$inferSelect;
-export type Client = typeof clients.$inferSelect;
-export type Document = typeof documents.$inferSelect;
-export type NewDocument = typeof documents.$inferInsert;
-export type NewClient = typeof clients.$inferInsert;
+export type User =
+  typeof users.$inferSelect;
+
+export type NewUser =
+  typeof users.$inferInsert;
+
+export type Company =
+  typeof company.$inferSelect;
+
+export type Client =
+  typeof clients.$inferSelect;
+
+export type Document =
+  typeof documents.$inferSelect;
+
+export type NewDocument =
+  typeof documents.$inferInsert;
+
+export type NewClient =
+  typeof clients.$inferInsert;
