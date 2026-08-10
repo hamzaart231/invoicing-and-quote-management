@@ -1,34 +1,183 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
+import {
+  and,
+  desc,
+  eq,
+  like,
+} from "drizzle-orm";
+
 import { db } from "@/db";
 import { documents } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { getCurrentUser } from "@/lib/auth";
 
-export async function GET(req: NextRequest) {
+/* =========================================
+   GET NEXT DOCUMENT NUMBER
+========================================= */
+
+export async function GET(
+  req: NextRequest
+) {
   try {
-    const { searchParams } = new URL(req.url);
-    const type = searchParams.get("type") ?? "invoice";
-    const year = new Date().getFullYear();
-    const prefix = type === "invoice" ? "F" : "D";
+    /* =====================================
+       AUTHENTICATION
+    ===================================== */
 
-    const latest = await db
-      .select()
-      .from(documents)
-      .where(eq(documents.type, type))
-      .orderBy(desc(documents.id))
-      .limit(1);
+    const user =
+      await getCurrentUser();
 
-    let nextNum = 1;
-    if (latest.length > 0) {
-      const lastNum = latest[0].number;
-      const parts = lastNum.split("-");
-      const num = parseInt(parts[parts.length - 1]);
-      if (!isNaN(num)) nextNum = num + 1;
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
     }
 
-    const number = `${prefix}-${year}-${String(nextNum).padStart(3, "0")}`;
-    return NextResponse.json({ number });
+    /* =====================================
+       DOCUMENT TYPE
+    ===================================== */
+
+    const { searchParams } =
+      new URL(req.url);
+
+    const requestedType =
+      searchParams.get(
+        "type"
+      );
+
+    const type =
+      requestedType === "quote"
+        ? "quote"
+        : "invoice";
+
+    /* =====================================
+       YEAR + PREFIX
+    ===================================== */
+
+    const year =
+      new Date().getFullYear();
+
+    const prefix =
+      type === "invoice"
+        ? "F"
+        : "D";
+
+    const numberPrefix =
+      `${prefix}-${year}-`;
+
+    /* =====================================
+       FIND LATEST NUMBER FOR THIS USER
+    ===================================== */
+
+    const latest =
+      await db
+        .select({
+          number:
+            documents.number,
+        })
+        .from(documents)
+        .where(
+          and(
+            /*
+             * Critical SaaS isolation:
+             * only this user's documents.
+             */
+            eq(
+              documents.userId,
+              user.id
+            ),
+
+            eq(
+              documents.type,
+              type
+            ),
+
+            /*
+             * Only current-year numbers.
+             */
+            like(
+              documents.number,
+              `${numberPrefix}%`
+            )
+          )
+        )
+        .orderBy(
+          desc(
+            documents.number
+          )
+        )
+        .limit(1);
+
+    /* =====================================
+       CALCULATE NEXT NUMBER
+    ===================================== */
+
+    let nextNum = 1;
+
+    if (
+      latest.length > 0
+    ) {
+      const lastNumber =
+        latest[0].number;
+
+      const parts =
+        lastNumber.split("-");
+
+      const numericPart =
+        parts[
+          parts.length - 1
+        ];
+
+      const parsed =
+        Number.parseInt(
+          numericPart,
+          10
+        );
+
+      if (
+        Number.isInteger(
+          parsed
+        ) &&
+        parsed >= 0
+      ) {
+        nextNum =
+          parsed + 1;
+      }
+    }
+
+    /* =====================================
+       RESULT
+    ===================================== */
+
+    const number =
+      `${prefix}-${year}-${String(
+        nextNum
+      ).padStart(3, "0")}`;
+
+    return NextResponse.json({
+      number,
+    });
   } catch (error) {
-    console.error("GET /api/documents/next-number error:", error);
-    return NextResponse.json({ error: "Failed to get number" }, { status: 500 });
+    console.error(
+      "GET /api/documents/next-number error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Failed to get number",
+      },
+      {
+        status: 500,
+      }
+    );
   }
-}
+      }
