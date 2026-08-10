@@ -4,11 +4,20 @@ import bcrypt from "bcryptjs";
 
 import { db } from "@/db";
 import { users } from "@/db/schema";
+import { setSession } from "@/lib/auth";
+
+/* =========================================
+   REGISTER
+========================================= */
 
 export async function POST(
   request: Request
 ) {
   try {
+    /* =====================================
+       READ BODY
+    ===================================== */
+
     const body = await request.json();
 
     const name =
@@ -28,11 +37,14 @@ export async function POST(
         ? body.password
         : "";
 
-    /* Validation */
+    /* =====================================
+       VALIDATION
+    ===================================== */
 
     if (!name) {
       return NextResponse.json(
         {
+          success: false,
           error: "Name is required",
         },
         {
@@ -44,6 +56,7 @@ export async function POST(
     if (!email) {
       return NextResponse.json(
         {
+          success: false,
           error: "Email is required",
         },
         {
@@ -52,11 +65,19 @@ export async function POST(
       );
     }
 
+    /*
+     * Basic email validation.
+     */
+
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (
-      !email.includes("@")
+      !emailPattern.test(email)
     ) {
       return NextResponse.json(
         {
+          success: false,
           error: "Invalid email",
         },
         {
@@ -65,9 +86,14 @@ export async function POST(
       );
     }
 
+    /*
+     * Minimum password length.
+     */
+
     if (password.length < 8) {
       return NextResponse.json(
         {
+          success: false,
           error:
             "Password must be at least 8 characters",
         },
@@ -77,7 +103,9 @@ export async function POST(
       );
     }
 
-    /* Check duplicate email */
+    /* =====================================
+       CHECK EXISTING USER
+    ===================================== */
 
     const existingUsers =
       await db
@@ -98,6 +126,7 @@ export async function POST(
     ) {
       return NextResponse.json(
         {
+          success: false,
           error:
             "Email already registered",
         },
@@ -107,7 +136,9 @@ export async function POST(
       );
     }
 
-    /* Hash password */
+    /* =====================================
+       PASSWORD HASH
+    ===================================== */
 
     const passwordHash =
       await bcrypt.hash(
@@ -115,7 +146,9 @@ export async function POST(
         12
       );
 
-    /* Create user */
+    /* =====================================
+       CREATE USER
+    ===================================== */
 
     const createdUsers =
       await db
@@ -136,10 +169,37 @@ export async function POST(
     const user =
       createdUsers[0];
 
+    if (!user) {
+      throw new Error(
+        "User was not created"
+      );
+    }
+
+    /* =====================================
+       CREATE SESSION
+    ===================================== */
+
+    await setSession({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    });
+
+    /* =====================================
+       RESPONSE
+    ===================================== */
+
     return NextResponse.json(
       {
         success: true,
-        user,
+
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          createdAt:
+            user.createdAt,
+        },
       },
       {
         status: 201,
@@ -153,6 +213,7 @@ export async function POST(
 
     return NextResponse.json(
       {
+        success: false,
         error:
           "Unable to create account",
       },
@@ -161,4 +222,4 @@ export async function POST(
       }
     );
   }
-}
+        }
