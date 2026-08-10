@@ -46,6 +46,15 @@ export const users = pgTable("users", {
 export const company = pgTable("company", {
   id: serial("id").primaryKey(),
 
+  /*
+   * Tenant owner.
+   *
+   * Nullable temporarily so existing
+   * production data can be migrated safely.
+   */
+  userId: integer("user_id")
+    .references(() => users.id),
+
   name: text("name")
     .notNull()
     .default(""),
@@ -88,6 +97,15 @@ export const company = pgTable("company", {
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
 
+  /*
+   * Tenant owner.
+   *
+   * Nullable temporarily until existing
+   * clients are assigned to a user.
+   */
+  userId: integer("user_id")
+    .references(() => users.id),
+
   name: text("name")
     .notNull(),
 
@@ -112,9 +130,27 @@ export const clients = pgTable("clients", {
 export const documents = pgTable("documents", {
   id: serial("id").primaryKey(),
 
+  /*
+   * Tenant owner.
+   *
+   * Nullable temporarily until existing
+   * invoices and quotes are migrated.
+   */
+  userId: integer("user_id")
+    .references(() => users.id),
+
   type: text("type")
     .notNull(),
 
+  /*
+   * IMPORTANT:
+   *
+   * The existing global unique constraint is
+   * intentionally preserved for this migration.
+   *
+   * Later it will become unique per user:
+   * (userId, number)
+   */
   number: text("number")
     .notNull()
     .unique(),
