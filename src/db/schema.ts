@@ -6,6 +6,7 @@ import {
   timestamp,
   jsonb,
   serial,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /* =========================
@@ -23,10 +24,6 @@ export const users = pgTable("users", {
     .notNull()
     .unique(),
 
-  /*
-   * Never store the original password.
-   * Only the password hash is stored.
-   */
   passwordHash: text("password_hash")
     .notNull(),
 
@@ -46,12 +43,6 @@ export const users = pgTable("users", {
 export const company = pgTable("company", {
   id: serial("id").primaryKey(),
 
-  /*
-   * Tenant owner.
-   *
-   * Nullable temporarily so existing
-   * production data can be migrated safely.
-   */
   userId: integer("user_id")
     .references(() => users.id),
 
@@ -78,7 +69,6 @@ export const company = pgTable("company", {
   logo: text("logo")
     .default(""),
 
-  // Default company currency
   currency: text("currency")
     .notNull()
     .default("USD"),
@@ -97,12 +87,6 @@ export const company = pgTable("company", {
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
 
-  /*
-   * Tenant owner.
-   *
-   * Nullable temporarily until existing
-   * clients are assigned to a user.
-   */
   userId: integer("user_id")
     .references(() => users.id),
 
@@ -127,161 +111,141 @@ export const clients = pgTable("clients", {
    DOCUMENTS TABLE
 ========================= */
 
-export const documents = pgTable("documents", {
-  id: serial("id").primaryKey(),
+export const documents = pgTable(
+  "documents",
+  {
+    id: serial("id").primaryKey(),
 
-  /*
-   * Tenant owner.
-   *
-   * Nullable temporarily until existing
-   * invoices and quotes are migrated.
-   */
-  userId: integer("user_id")
-    .references(() => users.id),
+    userId: integer("user_id")
+      .references(() => users.id),
 
-  type: text("type")
-    .notNull(),
+    type: text("type")
+      .notNull(),
 
-  /*
-   * IMPORTANT:
-   *
-   * The existing global unique constraint is
-   * intentionally preserved for this migration.
-   *
-   * Later it will become unique per user:
-   * (userId, number)
-   */
-  number: text("number")
-    .notNull()
-    .unique(),
+    /*
+     * Document number is no longer
+     * globally unique.
+     *
+     * The unique index below makes it
+     * unique only inside each account.
+     */
+    number: text("number")
+      .notNull(),
 
-  date: text("date")
-    .notNull(),
+    date: text("date")
+      .notNull(),
 
-  dueDate: text("due_date")
-    .default(""),
+    dueDate: text("due_date")
+      .default(""),
 
-  /* =====================
-     Client snapshot
-  ===================== */
+    /* Client snapshot */
 
-  clientName: text("client_name")
-    .notNull()
-    .default(""),
+    clientName: text("client_name")
+      .notNull()
+      .default(""),
 
-  clientPhone: text("client_phone")
-    .default(""),
+    clientPhone: text("client_phone")
+      .default(""),
 
-  clientEmail: text("client_email")
-    .default(""),
+    clientEmail: text("client_email")
+      .default(""),
 
-  clientAddress: text("client_address")
-    .default(""),
+    clientAddress: text("client_address")
+      .default(""),
 
-  /* =====================
-     Items
-  ===================== */
+    /* Items */
 
-  items: jsonb("items")
-    .notNull()
-    .default([]),
+    items: jsonb("items")
+      .notNull()
+      .default([]),
 
-  /* =====================
-     Tax
-  ===================== */
+    /* Tax */
 
-  taxRate: decimal(
-    "tax_rate",
-    {
-      precision: 5,
-      scale: 2,
-    }
-  )
-    .notNull()
-    .default("20"),
+    taxRate: decimal(
+      "tax_rate",
+      {
+        precision: 5,
+        scale: 2,
+      }
+    )
+      .notNull()
+      .default("20"),
 
-  /* =====================
-     Discount
-  ===================== */
+    /* Discount */
 
-  discount: decimal(
-    "discount",
-    {
-      precision: 10,
-      scale: 2,
-    }
-  )
-    .notNull()
-    .default("0"),
+    discount: decimal(
+      "discount",
+      {
+        precision: 10,
+        scale: 2,
+      }
+    )
+      .notNull()
+      .default("0"),
 
-  discountType: text(
-    "discount_type"
-  )
-    .notNull()
-    .default("fixed"),
+    discountType: text(
+      "discount_type"
+    )
+      .notNull()
+      .default("fixed"),
 
-  /* =====================
-     Status
-  ===================== */
+    /* Status */
 
-  status: text("status")
-    .notNull()
-    .default("draft"),
+    status: text("status")
+      .notNull()
+      .default("draft"),
 
-  /* =====================
-     Template
-  ===================== */
+    /* Template */
 
-  template: text("template")
-    .notNull()
-    .default("classic"),
+    template: text("template")
+      .notNull()
+      .default("classic"),
 
-  /* =====================
-     Language
-  ===================== */
+    /* Language */
 
-  language: text("language")
-    .notNull()
-    .default("ar"),
+    language: text("language")
+      .notNull()
+      .default("ar"),
 
-  /* =====================
-     Currency
-  ===================== */
+    /* Currency */
 
-  currency: text("currency")
-    .notNull()
-    .default("USD"),
+    currency: text("currency")
+      .notNull()
+      .default("USD"),
 
-  /* =====================
-     Notes
-  ===================== */
+    /* Notes */
 
-  notes: text("notes")
-    .default(""),
+    notes: text("notes")
+      .default(""),
 
-  /* =====================
-     Quote conversion
-  ===================== */
+    /* Quote conversion */
 
-  convertedFrom: integer(
-    "converted_from"
-  )
-    .default(0),
+    convertedFrom: integer(
+      "converted_from"
+    )
+      .default(0),
 
-  /* =====================
-     Timestamps
-  ===================== */
+    /* Timestamps */
 
-  createdAt: timestamp(
-    "created_at"
-  )
-    .defaultNow(),
+    createdAt: timestamp(
+      "created_at"
+    )
+      .defaultNow(),
 
-  updatedAt: timestamp(
-    "updated_at"
-  )
-    .defaultNow(),
-});
+    updatedAt: timestamp(
+      "updated_at"
+    )
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex(
+      "documents_user_id_number_unique"
+    ).on(
+      table.userId,
+      table.number
+    ),
+  ]
+);
 
 /* =========================
    TYPES
