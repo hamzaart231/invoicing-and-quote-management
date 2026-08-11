@@ -1,5 +1,4 @@
 "use client";
-// Classic invoice template
 
 import React from "react";
 
@@ -11,9 +10,13 @@ import {
   calcTotal,
 } from "@/lib/types";
 
-import { t, formatDate, Language } from "@/lib/i18n";
-import { formatCurrency } from "@/lib/formatCurrency";
+import {
+  t,
+  formatDate,
+  Language,
+} from "@/lib/i18n";
 
+import { formatCurrency } from "@/lib/formatCurrency";
 import { DocumentTemplateProps } from "./types";
 
 export default function ClassicTemplate({
@@ -22,37 +25,58 @@ export default function ClassicTemplate({
 }: DocumentTemplateProps) {
   const lang = doc.language as Language;
 
-  const dir = lang === "ar" ? "rtl" : "ltr";
+  const dir =
+    lang === "ar" ? "rtl" : "ltr";
 
   const currency =
-    doc.currency || company.currency || "USD";
+    doc.currency ||
+    company.currency ||
+    "USD";
 
-  const items = doc.items as DocumentItem[];
+  const items =
+    doc.items as DocumentItem[];
 
-  const subtotal = calcSubtotal(items);
+  /* =========================================
+     EXISTING CALCULATIONS
+     DO NOT CHANGE
+  ========================================= */
 
-  const discountAmount = calcDiscount(
-    subtotal,
-    doc.discount,
-    doc.discountType
-  );
+  const subtotal =
+    calcSubtotal(items);
 
-  const taxAmount = calcTax(
-    subtotal,
-    discountAmount,
-    doc.taxRate
-  );
+  const discountAmount =
+    calcDiscount(
+      subtotal,
+      doc.discount,
+      doc.discountType
+    );
 
-  const total = calcTotal(
-    subtotal,
-    discountAmount,
-    taxAmount
-  );
+  const taxAmount =
+    calcTax(
+      subtotal,
+      discountAmount,
+      doc.taxRate
+    );
 
-  const isInvoice = doc.type === "invoice";
+  const total =
+    calcTotal(
+      subtotal,
+      discountAmount,
+      taxAmount
+    );
+
+  const isInvoice =
+    doc.type === "invoice";
+
+  /* =========================================
+     STATUS
+  ========================================= */
 
   const getStatusLabel = () => {
-    const statusMap: Record<string, string> = {
+    const statusMap: Record<
+      string,
+      string
+    > = {
       draft: t(lang, "draft"),
       sent: t(lang, "sent"),
       paid: t(lang, "paid"),
@@ -60,7 +84,10 @@ export default function ClassicTemplate({
       expired: t(lang, "expired"),
     };
 
-    return statusMap[doc.status] ?? doc.status;
+    return (
+      statusMap[doc.status] ??
+      doc.status
+    );
   };
 
   return (
@@ -70,407 +97,597 @@ export default function ClassicTemplate({
         fontFamily:
           lang === "ar"
             ? "'Noto Sans Arabic', Arial, sans-serif"
-            : "'Times New Roman', serif",
+            : "'Times New Roman', Georgia, serif",
       }}
-      className="mx-auto w-full max-w-[210mm] min-h-[297mm] bg-white text-black print:min-h-0"
+      className="mx-auto min-h-[297mm] w-full max-w-[210mm] bg-white text-slate-900 print:min-h-0"
     >
-      <div className="p-10">
+      <div className="p-10 print:p-[10mm]">
 
-  {/* Header */}
+        {/* =====================================
+            HEADER
+        ====================================== */}
 
-  <header className="border-b-2 border-slate-700 pb-8">
+        <header className="border-b-2 border-slate-700 pb-7">
 
-    <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-10">
 
-      <div>
+            {/* Company */}
 
-        {company.logo && (
-          <img
-            src={company.logo}
-            alt="Company Logo"
-            className="mb-4 h-20 object-contain"
-          />
-        )}
+            <div className="min-w-0 flex-1">
 
-        <h1 className="text-3xl font-bold tracking-wide">
-          {company.name}
-        </h1>
+              {company.logo && (
+                <img
+                  src={company.logo}
+                  alt="Company Logo"
+                  className="mb-4 h-20 max-w-[190px] object-contain"
+                />
+              )}
 
-        <div className="mt-4 space-y-1 text-sm text-slate-600">
+              <h1 className="text-3xl font-bold tracking-wide text-slate-900">
+                {company.name}
+              </h1>
 
-          {company.address && (
-            <p>{company.address}</p>
-          )}
+              <div className="mt-4 space-y-1 text-sm leading-6 text-slate-600">
 
-          {company.phone && (
-            <p>{company.phone}</p>
-          )}
+                {company.address && (
+                  <p>
+                    {company.address}
+                  </p>
+                )}
 
-          {company.email && (
-            <p>{company.email}</p>
-          )}
+                {company.phone && (
+                  <p>
+                    {company.phone}
+                  </p>
+                )}
 
-          {company.ice && (
-            <p>ICE : {company.ice}</p>
-          )}
+                {company.email && (
+                  <p>
+                    {company.email}
+                  </p>
+                )}
 
-        </div>
+                {company.ice && (
+                  <p>
+                    ICE: {company.ice}
+                  </p>
+                )}
 
-      </div>
-
-      <div className="text-right">
-
-        <h2 className="text-5xl font-bold uppercase tracking-widest text-slate-800">
-
-          {isInvoice
-            ? t(lang, "invoice")
-            : t(lang, "quote")}
-
-        </h2>
-
-        <div className="mt-6 space-y-2 text-sm">
-
-          <p>
-            <strong>{t(lang, "number")}:</strong>{" "}
-            {doc.number}
-          </p>
-
-          <p>
-            <strong>{t(lang, "date")}:</strong>{" "}
-            {formatDate(doc.date, lang)}
-          </p>
-
-          {doc.dueDate && (
-            <p>
-              <strong>{t(lang, "dueDate")}:</strong>{" "}
-              {formatDate(doc.dueDate, lang)}
-            </p>
-          )}
-
-          <p>
-            <strong>{t(lang, "status")}:</strong>{" "}
-            {getStatusLabel()}
-          </p>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </header>
-              {/* Client Details */}
-      <section className="mt-8 grid grid-cols-2 gap-10 border-b border-slate-300 pb-8">
-
-        <div>
-          <h3 className="mb-3 border-b border-slate-400 pb-2 text-sm font-bold uppercase tracking-wider text-slate-700">
-            {t(lang, "client")}
-          </h3>
-
-          <p className="text-lg font-bold">
-            {doc.clientName}
-          </p>
-
-          <div className="mt-3 space-y-1 text-sm text-slate-700">
-            {doc.clientAddress && (
-              <p>{doc.clientAddress}</p>
-            )}
-
-            {doc.clientPhone && (
-              <p>{doc.clientPhone}</p>
-            )}
-
-            {doc.clientEmail && (
-              <p>{doc.clientEmail}</p>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <h3 className="mb-3 border-b border-slate-400 pb-2 text-sm font-bold uppercase tracking-wider text-slate-700">
-            {isInvoice
-              ? t(lang, "invoice")
-              : t(lang, "quote")}
-          </h3>
-
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between gap-6">
-              <span className="font-bold">
-                {t(lang, "number")}
-              </span>
-              <span>{doc.number}</span>
-            </div>
-
-            <div className="flex justify-between gap-6">
-              <span className="font-bold">
-                {t(lang, "date")}
-              </span>
-              <span>{formatDate(doc.date, lang)}</span>
-            </div>
-
-            {doc.dueDate && (
-              <div className="flex justify-between gap-6">
-                <span className="font-bold">
-                  {t(lang, "dueDate")}
-                </span>
-                <span>{formatDate(doc.dueDate, lang)}</span>
               </div>
-            )}
 
-            <div className="flex justify-between gap-6">
-              <span className="font-bold">
-                {t(lang, "status")}
-              </span>
-              <span>{getStatusLabel()}</span>
             </div>
+
+            {/* Document Heading */}
+
+            <div
+              className={`shrink-0 ${
+                dir === "rtl"
+                  ? "text-left"
+                  : "text-right"
+              }`}
+            >
+
+              <h2 className="text-4xl font-bold uppercase tracking-wider text-slate-800">
+
+                {isInvoice
+                  ? t(
+                      lang,
+                      "invoice"
+                    )
+                  : t(
+                      lang,
+                      "quote"
+                    )}
+
+              </h2>
+
+              <p
+                className="mt-4 whitespace-nowrap text-lg font-semibold"
+                dir="ltr"
+              >
+                {doc.number}
+              </p>
+
+              <div className="mt-3 space-y-1 text-sm text-slate-600">
+
+                <p className="whitespace-nowrap">
+                  {formatDate(
+                    doc.date,
+                    lang
+                  )}
+                </p>
+
+                {doc.dueDate && (
+                  <p className="whitespace-nowrap">
+                    {t(
+                      lang,
+                      "dueDate"
+                    )}
+                    :{" "}
+                    {formatDate(
+                      doc.dueDate,
+                      lang
+                    )}
+                  </p>
+                )}
+
+                <p className="font-semibold">
+                  {getStatusLabel()}
+                </p>
+
+              </div>
+
+            </div>
+
           </div>
-        </div>
 
-      </section>
-              {/* Items Table */}
-      <section className="mt-8">
+        </header>
 
-        <table className="w-full border-collapse text-sm">
+        {/* =====================================
+            CLIENT / DOCUMENT DETAILS
+        ====================================== */}
 
-          <thead>
-            <tr className="bg-slate-700 text-white">
+        <section className="grid grid-cols-2 gap-10 border-b border-slate-300 py-8">
 
-              <th
-                className={`border border-slate-500 px-4 py-3 font-bold ${
-                  dir === "rtl" ? "text-right" : "text-left"
-                }`}
-              >
-                {t(lang, "description")}
-              </th>
+          {/* Client */}
 
-              <th className="border border-slate-500 px-4 py-3 text-center font-bold">
-                {t(lang, "quantity")}
-              </th>
+          <div className="min-w-0">
 
-              <th className="border border-slate-500 px-4 py-3 text-center font-bold">
-                {t(lang, "unitPrice")}
-              </th>
+            <h3 className="mb-4 border-b border-slate-400 pb-2 text-sm font-bold uppercase tracking-wider text-slate-700">
+              {t(
+                lang,
+                "client"
+              )}
+            </h3>
 
-              <th className="border border-slate-500 px-4 py-3 text-center font-bold">
-                {t(lang, "tax")}
-              </th>
+            <p className="text-lg font-bold text-slate-900">
+              {doc.clientName}
+            </p>
 
-              <th
-                className={`border border-slate-500 px-4 py-3 font-bold ${
-                  dir === "rtl" ? "text-left" : "text-right"
-                }`}
-              >
-                {t(lang, "lineTotal")}
-              </th>
+            <div className="mt-3 space-y-1 text-sm leading-6 text-slate-600">
 
-            </tr>
-          </thead>
+              {doc.clientAddress && (
+                <p>
+                  {doc.clientAddress}
+                </p>
+              )}
 
-          <tbody>
-            {items.map((item, index) => (
-              <tr
-                key={item.id || index}
-                className="bg-white"
-              >
+              {doc.clientPhone && (
+                <p dir="ltr">
+                  {doc.clientPhone}
+                </p>
+              )}
 
-                <td
-                  className={`border border-slate-300 px-4 py-3 ${
-                    dir === "rtl" ? "text-right" : "text-left"
+              {doc.clientEmail && (
+                <p className="break-all">
+                  {doc.clientEmail}
+                </p>
+              )}
+
+            </div>
+
+          </div>
+
+          {/* Document Details */}
+
+          <div className="min-w-0">
+
+            <h3 className="mb-4 border-b border-slate-400 pb-2 text-sm font-bold uppercase tracking-wider text-slate-700">
+
+              {isInvoice
+                ? t(
+                    lang,
+                    "invoice"
+                  )
+                : t(
+                    lang,
+                    "quote"
+                  )}
+
+            </h3>
+
+            <div className="space-y-3 text-sm">
+
+              <div className="flex items-start justify-between gap-6">
+
+                <span className="font-bold">
+                  {t(
+                    lang,
+                    "number"
+                  )}
+                </span>
+
+                <span
+                  dir="ltr"
+                  className="whitespace-nowrap"
+                >
+                  {doc.number}
+                </span>
+
+              </div>
+
+              <div className="flex items-start justify-between gap-6">
+
+                <span className="font-bold">
+                  {t(
+                    lang,
+                    "date"
+                  )}
+                </span>
+
+                <span className="whitespace-nowrap">
+                  {formatDate(
+                    doc.date,
+                    lang
+                  )}
+                </span>
+
+              </div>
+
+              {doc.dueDate && (
+                <div className="flex items-start justify-between gap-6">
+
+                  <span className="font-bold">
+                    {t(
+                      lang,
+                      "dueDate"
+                    )}
+                  </span>
+
+                  <span className="whitespace-nowrap">
+                    {formatDate(
+                      doc.dueDate,
+                      lang
+                    )}
+                  </span>
+
+                </div>
+              )}
+
+              <div className="flex items-start justify-between gap-6">
+
+                <span className="font-bold">
+                  {t(
+                    lang,
+                    "status"
+                  )}
+                </span>
+
+                <span>
+                  {getStatusLabel()}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* =====================================
+            ITEMS TABLE
+        ====================================== */}
+
+        <section className="mt-8">
+
+          <table className="w-full table-fixed border-collapse text-sm">
+
+            <thead>
+              <tr className="bg-slate-700 text-white">
+
+                <th
+                  className={`w-[32%] border border-slate-500 px-3 py-3 font-bold ${
+                    dir === "rtl"
+                      ? "text-right"
+                      : "text-left"
                   }`}
                 >
-                  {item.description}
-                </td>
-
-                <td className="border border-slate-300 px-4 py-3 text-center">
-                  {item.quantity}
-                </td>
-
-                <td className="border border-slate-300 px-4 py-3 text-center">
-                  {formatCurrency(
-                    Number(item.unitPrice),
-                    currency
+                  {t(
+                    lang,
+                    "description"
                   )}
-                </td>
+                </th>
 
-                <td className="border border-slate-300 px-4 py-3 text-center">
-                  {doc.taxRate}%
-                </td>
+                <th className="w-[13%] border border-slate-500 px-2 py-3 text-center font-bold">
+                  {t(
+                    lang,
+                    "quantity"
+                  )}
+                </th>
 
-                <td
-                  className={`border border-slate-300 px-4 py-3 font-semibold ${
-                    dir === "rtl" ? "text-left" : "text-right"
+                <th className="w-[20%] border border-slate-500 px-2 py-3 text-center font-bold">
+                  {t(
+                    lang,
+                    "unitPrice"
+                  )}
+                </th>
+
+                <th className="w-[15%] border border-slate-500 px-2 py-3 text-center font-bold">
+                  {t(
+                    lang,
+                    "tax"
+                  )}
+                </th>
+
+                <th
+                  className={`w-[20%] border border-slate-500 px-3 py-3 font-bold ${
+                    dir === "rtl"
+                      ? "text-left"
+                      : "text-right"
                   }`}
                 >
-                  {formatCurrency(
-                    Number(item.total),
-                    currency
+                  {t(
+                    lang,
+                    "lineTotal"
                   )}
-                </td>
+                </th>
 
               </tr>
-            ))}
-          </tbody>
+            </thead>
 
-        </table>
+            <tbody>
 
-      </section>
-              {/* Totals */}
-      <section
-        className={`mt-8 flex ${
-          dir === "rtl" ? "justify-start" : "justify-end"
-        }`}
-      >
-        <div className="w-full max-w-sm text-sm">
+              {items.map(
+                (item, index) => (
 
-          {/* Subtotal */}
-          <div className="flex justify-between border-b border-slate-300 px-4 py-3">
-            <span className="font-semibold">
-              {t(lang, "subtotal")}
-            </span>
+                  <tr
+                    key={
+                      item.id ||
+                      index
+                    }
+                    className="bg-white"
+                  >
 
-            <span>
-              {formatCurrency(Number(subtotal), currency)}
-            </span>
-          </div>
+                    <td
+                      className={`break-words border border-slate-300 px-3 py-3 ${
+                        dir === "rtl"
+                          ? "text-right"
+                          : "text-left"
+                      }`}
+                    >
+                      {item.description}
+                    </td>
 
-          {/* Discount */}
-          {discountAmount > 0 && (
-            <div className="flex justify-between border-b border-slate-300 px-4 py-3">
-              <span>
-                {t(lang, "discount")}
-                {doc.discountType === "percentage"
-                  ? ` (${doc.discount}%)`
-                  : ""}
-              </span>
+                    <td className="border border-slate-300 px-2 py-3 text-center">
+                      {item.quantity}
+                    </td>
 
-              <span>
-                - {formatCurrency(Number(discountAmount), currency)}
-              </span>
-            </div>
-          )}
+                    <td
+                      dir="ltr"
+                      className="border border-slate-300 px-2 py-3 text-center"
+                    >
+                      {formatCurrency(
+                        Number(
+                          item.unitPrice
+                        ),
+                        currency
+                      )}
+                    </td>
 
-          {/* Tax */}
-          <div className="flex justify-between border-b border-slate-300 px-4 py-3">
-            <span>
-              {t(lang, "tax")} ({doc.taxRate}%)
-            </span>
+                    <td
+                      dir="ltr"
+                      className="border border-slate-300 px-2 py-3 text-center"
+                    >
+                      {doc.taxRate}%
+                    </td>
 
-            <span>
-              {formatCurrency(Number(taxAmount), currency)}
-            </span>
-          </div>
+                    <td
+                      dir="ltr"
+                      className={`border border-slate-300 px-3 py-3 font-semibold ${
+                        dir === "rtl"
+                          ? "text-left"
+                          : "text-right"
+                      }`}
+                    >
+                      {formatCurrency(
+                        Number(
+                          item.total
+                        ),
+                        currency
+                      )}
+                    </td>
 
-          {/* Grand Total */}
-          <div className="flex justify-between bg-slate-700 px-4 py-4 text-lg font-bold text-white">
-            <span>
-              {t(lang, "total")}
-            </span>
+                  </tr>
 
-            <span>
-              {formatCurrency(Number(total), currency)}
-            </span>
-          </div>
+                )
+              )}
 
-        </div>
-      </section>
-              {/* Totals */}
-      <section
-        className={`mt-8 flex ${
-          dir === "rtl" ? "justify-start" : "justify-end"
-        }`}
-      >
-        <div className="w-full max-w-sm text-sm">
+            </tbody>
 
-          {/* Subtotal */}
-          <div className="flex justify-between border-b border-slate-300 px-4 py-3">
-            <span className="font-semibold">
-              {t(lang, "subtotal")}
-            </span>
+          </table>
 
-            <span>
-              {formatCurrency(Number(subtotal), currency)}
-            </span>
-          </div>
-
-          {/* Discount */}
-          {discountAmount > 0 && (
-            <div className="flex justify-between border-b border-slate-300 px-4 py-3">
-              <span>
-                {t(lang, "discount")}
-                {doc.discountType === "percentage"
-                  ? ` (${doc.discount}%)`
-                  : ""}
-              </span>
-
-              <span>
-                - {formatCurrency(Number(discountAmount), currency)}
-              </span>
-            </div>
-          )}
-
-          {/* Tax */}
-          <div className="flex justify-between border-b border-slate-300 px-4 py-3">
-            <span>
-              {t(lang, "tax")} ({doc.taxRate}%)
-            </span>
-
-            <span>
-              {formatCurrency(Number(taxAmount), currency)}
-            </span>
-          </div>
-
-          {/* Grand Total */}
-          <div className="flex justify-between bg-slate-700 px-4 py-4 text-lg font-bold text-white">
-            <span>
-              {t(lang, "total")}
-            </span>
-
-            <span>
-              {formatCurrency(Number(total), currency)}
-            </span>
-          </div>
-
-        </div>
-      </section>
-              {/* Notes */}
-      {doc.notes && (
-        <section className="mt-10 border-t border-slate-300 pt-6">
-          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-700">
-            {t(lang, "notes")}
-          </h3>
-
-          <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
-            {doc.notes}
-          </p>
         </section>
-      )}
 
-      {/* Footer */}
-      <footer className="mt-12 border-t-2 border-slate-700 pt-5 text-center text-xs text-slate-600">
+        {/* =====================================
+            TOTALS
+            IMPORTANT: ONLY ONE TOTALS SECTION
+        ====================================== */}
 
-        <p className="font-bold text-slate-800">
-          {company.name}
-        </p>
+        <section
+          className={`mt-8 flex ${
+            dir === "rtl"
+              ? "justify-start"
+              : "justify-end"
+          }`}
+        >
 
-        <p className="mt-2">
-          {[
-            company.address,
-            company.phone,
-            company.email,
-          ]
-            .filter(Boolean)
-            .join(" • ")}
-        </p>
+          <div className="w-full max-w-sm text-sm">
 
-        {company.ice && (
-          <p className="mt-1">
-            ICE: {company.ice}
-          </p>
+            {/* Subtotal */}
+
+            <div className="flex justify-between gap-6 border-b border-slate-300 px-4 py-3">
+
+              <span className="font-semibold">
+                {t(
+                  lang,
+                  "subtotal"
+                )}
+              </span>
+
+              <span
+                dir="ltr"
+                className="whitespace-nowrap"
+              >
+                {formatCurrency(
+                  Number(
+                    subtotal
+                  ),
+                  currency
+                )}
+              </span>
+
+            </div>
+
+            {/* Discount */}
+
+            {discountAmount >
+              0 && (
+
+              <div className="flex justify-between gap-6 border-b border-slate-300 px-4 py-3">
+
+                <span>
+
+                  {t(
+                    lang,
+                    "discount"
+                  )}
+
+                  {doc.discountType ===
+                  "percentage"
+                    ? ` (${doc.discount}%)`
+                    : ""}
+
+                </span>
+
+                <span
+                  dir="ltr"
+                  className="whitespace-nowrap"
+                >
+                  -{" "}
+                  {formatCurrency(
+                    Number(
+                      discountAmount
+                    ),
+                    currency
+                  )}
+                </span>
+
+              </div>
+
+            )}
+
+            {/* Tax */}
+
+            <div className="flex justify-between gap-6 border-b border-slate-300 px-4 py-3">
+
+              <span>
+                {t(
+                  lang,
+                  "tax"
+                )}{" "}
+                ({doc.taxRate}%)
+              </span>
+
+              <span
+                dir="ltr"
+                className="whitespace-nowrap"
+              >
+                {formatCurrency(
+                  Number(
+                    taxAmount
+                  ),
+                  currency
+                )}
+              </span>
+
+            </div>
+
+            {/* Grand Total */}
+
+            <div className="flex justify-between gap-6 bg-slate-700 px-4 py-4 text-lg font-bold text-white">
+
+              <span>
+                {t(
+                  lang,
+                  "total"
+                )}
+              </span>
+
+              <span
+                dir="ltr"
+                className="whitespace-nowrap"
+              >
+                {formatCurrency(
+                  Number(
+                    total
+                  ),
+                  currency
+                )}
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* =====================================
+            NOTES
+        ====================================== */}
+
+        {doc.notes && (
+
+          <section className="mt-10 border-t border-slate-300 pt-6">
+
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-700">
+              {t(
+                lang,
+                "notes"
+              )}
+            </h3>
+
+            <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">
+              {doc.notes}
+            </p>
+
+          </section>
+
         )}
 
-      </footer>
+        {/* =====================================
+            FOOTER
+        ====================================== */}
 
-</div>
-          </div>
+        <footer className="mt-12 border-t-2 border-slate-700 pt-5 text-center text-xs text-slate-600">
+
+          <p className="font-bold text-slate-800">
+            {company.name}
+          </p>
+
+          <p className="mt-2">
+
+            {[
+              company.address,
+              company.phone,
+              company.email,
+            ]
+              .filter(Boolean)
+              .join(" • ")}
+
+          </p>
+
+          {company.ice && (
+
+            <p className="mt-1">
+              ICE: {company.ice}
+            </p>
+
+          )}
+
+        </footer>
+
+      </div>
+    </div>
   );
-      }
+}
