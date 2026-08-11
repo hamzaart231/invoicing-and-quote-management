@@ -8,18 +8,21 @@ import {
 import Link from "next/link";
 
 import {
+  usePathname,
   useRouter,
 } from "next/navigation";
 
 import {
   FileText,
-  Settings,
   LayoutDashboard,
   Menu,
   X,
   Users,
+  Settings,
   LogOut,
   User,
+  Plus,
+  ChevronLeft,
 } from "lucide-react";
 
 import {
@@ -32,7 +35,7 @@ import {
 } from "@/lib/i18n";
 
 /* =========================================
-   USER TYPE
+   USER
 ========================================= */
 
 interface CurrentUser {
@@ -42,7 +45,7 @@ interface CurrentUser {
 }
 
 /* =========================================
-   HEADER
+   HEADER / SAAS APP SHELL
 ========================================= */
 
 export default function Header() {
@@ -54,13 +57,16 @@ export default function Header() {
   const router =
     useRouter();
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
+  const pathname =
+    usePathname();
 
   const [user, setUser] =
     useState<CurrentUser | null>(
       null
     );
+
+  const [menuOpen, setMenuOpen] =
+    useState(false);
 
   const [checkingUser, setCheckingUser] =
     useState(true);
@@ -68,8 +74,12 @@ export default function Header() {
   const [loggingOut, setLoggingOut] =
     useState(false);
 
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname === "/register";
+
   /* =====================================
-     LOAD CURRENT USER
+     CURRENT USER
   ===================================== */
 
   useEffect(() => {
@@ -129,7 +139,15 @@ export default function Header() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [pathname]);
+
+  /* =====================================
+     CLOSE DRAWER
+  ===================================== */
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   /* =====================================
      LOGOUT
@@ -153,8 +171,6 @@ export default function Header() {
 
         setUser(null);
 
-        setMenuOpen(false);
-
         router.replace(
           "/login"
         );
@@ -171,363 +187,409 @@ export default function Header() {
     };
 
   /* =====================================
-     NAVIGATION
+     AUTH PAGES
   ===================================== */
+
+  if (isAuthPage) {
+    return null;
+  }
 
   const navItems = [
     {
       href: "/",
-
       label:
         t(
           lang,
           "dashboard"
         ),
-
-      icon: (
-        <LayoutDashboard
-          size={18}
-        />
-      ),
+      icon:
+        LayoutDashboard,
     },
 
     {
       href: "/documents",
-
       label:
         t(
           lang,
           "invoices"
         ),
-
-      icon: (
-        <FileText
-          size={18}
-        />
-      ),
+      icon:
+        FileText,
     },
 
     {
       href: "/clients",
-
       label:
         t(
           lang,
           "clients"
         ),
-
-      icon: (
-        <Users
-          size={18}
-        />
-      ),
+      icon:
+        Users,
     },
 
     {
       href: "/settings",
-
       label:
         t(
           lang,
           "settings"
         ),
-
-      icon: (
-        <Settings
-          size={18}
-        />
-      ),
+      icon:
+        Settings,
     },
   ];
 
-  return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-xl">
+  const isActive = (
+    href: string
+  ) => {
+    if (href === "/") {
+      return (
+        pathname === "/"
+      );
+    }
 
-      <div className="mx-auto max-w-7xl px-4">
+    return pathname.startsWith(
+      href
+    );
+  };
 
-        <div className="flex h-16 items-center justify-between">
+  /* =====================================
+     SIDEBAR CONTENT
+  ===================================== */
 
-          {/* =================================
-              LOGO
-          ================================== */}
+  const SidebarContent = () => (
+    <div className="flex h-full flex-col">
 
-          <Link
-            href="/"
-            className="group flex items-center gap-3"
-          >
+      {/* Brand */}
 
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg transition-transform group-hover:scale-105">
+      <div className="flex h-20 items-center px-6">
 
-              <FileText
-                size={20}
-                className="text-white"
-              />
+        <Link
+          href="/"
+          className="flex items-center gap-3"
+        >
 
-            </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 shadow-lg shadow-violet-950/30">
 
-            <span className="text-xl font-bold tracking-tight">
+            <FileText
+              size={22}
+              className="text-white"
+            />
 
+          </div>
+
+          <div>
+
+            <p className="text-lg font-bold tracking-tight text-white">
               {t(
                 lang,
                 "appName"
               )}
+            </p>
 
-            </span>
-
-          </Link>
-
-          {/* =================================
-              DESKTOP NAV
-          ================================== */}
-
-          {user && (
-            <nav className="hidden items-center gap-1 md:flex">
-
-              {navItems.map(
-                (item) => (
-
-                  <Link
-                    key={
-                      item.href
-                    }
-                    href={
-                      item.href
-                    }
-                    className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white"
-                  >
-
-                    {item.icon}
-
-                    {item.label}
-
-                  </Link>
-
-                )
-              )}
-
-            </nav>
-          )}
-
-          {/* =================================
-              ACTIONS
-          ================================== */}
-
-          <div className="flex items-center gap-3">
-
-            {/* Language */}
-
-            <div className="flex items-center gap-1 rounded-lg bg-white/10 p-1">
-
-              {languages.map(
-                (language) => (
-
-                  <button
-                    type="button"
-                    key={
-                      language.code
-                    }
-                    onClick={() =>
-                      setLang(
-                        language.code
-                      )
-                    }
-                    className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
-                      lang ===
-                      language.code
-                        ? "bg-amber-400 text-slate-900 shadow"
-                        : "text-slate-300 hover:text-white"
-                    }`}
-                  >
-
-                    {
-                      language.label
-                    }
-
-                  </button>
-
-                )
-              )}
-
-            </div>
-
-            {/* Desktop User */}
-
-            {!checkingUser &&
-              user && (
-
-              <div className="hidden items-center gap-2 md:flex">
-
-                <div className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
-
-                  <User
-                    size={16}
-                    className="text-amber-400"
-                  />
-
-                  <span className="max-w-32 truncate text-sm font-medium">
-
-                    {user.name}
-
-                  </span>
-
-                </div>
-
-                <button
-                  type="button"
-                  onClick={
-                    handleLogout
-                  }
-                  disabled={
-                    loggingOut
-                  }
-                  title="Logout"
-                  className="rounded-lg p-2 text-slate-300 transition hover:bg-red-500/20 hover:text-red-300 disabled:opacity-50"
-                >
-
-                  <LogOut
-                    size={18}
-                  />
-
-                </button>
-
-              </div>
-
-            )}
-
-            {/* Mobile Menu */}
-
-            {user && (
-              <button
-                type="button"
-                className="rounded-lg p-2 transition hover:bg-white/10 md:hidden"
-                onClick={() =>
-                  setMenuOpen(
-                    !menuOpen
-                  )
-                }
-                aria-label="Menu"
-              >
-
-                {menuOpen ? (
-                  <X
-                    size={20}
-                  />
-                ) : (
-                  <Menu
-                    size={20}
-                  />
-                )}
-
-              </button>
-            )}
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-300">
+              SaaS
+            </p>
 
           </div>
 
-        </div>
-
-        {/* =================================
-            MOBILE NAV
-        ================================== */}
-
-        {menuOpen &&
-          user && (
-
-          <div className="border-t border-white/10 pb-4 pt-2 md:hidden">
-
-            {/* User */}
-
-            <div className="mb-2 flex items-center gap-3 rounded-lg bg-white/5 px-4 py-3">
-
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400 text-slate-900">
-
-                <User
-                  size={17}
-                />
-
-              </div>
-
-              <div className="min-w-0 flex-1">
-
-                <p className="truncate text-sm font-semibold">
-
-                  {user.name}
-
-                </p>
-
-                <p className="truncate text-xs text-slate-400">
-
-                  {user.email}
-
-                </p>
-
-              </div>
-
-            </div>
-
-            {/* Navigation */}
-
-            <nav className="mt-2 flex flex-col gap-1">
-
-              {navItems.map(
-                (item) => (
-
-                  <Link
-                    key={
-                      item.href
-                    }
-                    href={
-                      item.href
-                    }
-                    onClick={() =>
-                      setMenuOpen(
-                        false
-                      )
-                    }
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-slate-300 transition-all hover:bg-white/10 hover:text-white"
-                  >
-
-                    {item.icon}
-
-                    {item.label}
-
-                  </Link>
-
-                )
-              )}
-
-              {/* Logout */}
-
-              <button
-                type="button"
-                onClick={
-                  handleLogout
-                }
-                disabled={
-                  loggingOut
-                }
-                className="mt-2 flex items-center gap-3 rounded-lg px-4 py-3 text-red-300 transition hover:bg-red-500/10 disabled:opacity-50"
-              >
-
-                <LogOut
-                  size={18}
-                />
-
-                <span>
-                  {loggingOut
-                    ? "..."
-                    : "Logout"}
-                </span>
-
-              </button>
-
-            </nav>
-
-          </div>
-
-        )}
+        </Link>
 
       </div>
 
-    </header>
+      {/* New invoice */}
+
+      <div className="px-4 pb-5">
+
+        <Link
+          href="/documents/new?type=invoice"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-950/30 transition hover:from-violet-500 hover:to-purple-500"
+        >
+
+          <Plus
+            size={17}
+          />
+
+          {t(
+            lang,
+            "newInvoice"
+          )}
+
+        </Link>
+
+      </div>
+
+      {/* Navigation */}
+
+      <nav className="flex-1 space-y-1 px-3">
+
+        {navItems.map(
+          (item) => {
+            const Icon =
+              item.icon;
+
+            const active =
+              isActive(
+                item.href
+              );
+
+            return (
+              <Link
+                key={
+                  item.href
+                }
+                href={
+                  item.href
+                }
+                className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+                  active
+                    ? "bg-violet-600 text-white shadow-lg shadow-violet-950/20"
+                    : "text-slate-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+
+                <Icon
+                  size={18}
+                  className={
+                    active
+                      ? "text-white"
+                      : "text-slate-500 transition group-hover:text-violet-300"
+                  }
+                />
+
+                <span className="flex-1">
+                  {item.label}
+                </span>
+
+                {active && (
+                  <ChevronLeft
+                    size={14}
+                    className="opacity-70"
+                  />
+                )}
+
+              </Link>
+            );
+          }
+        )}
+
+      </nav>
+
+      {/* Languages */}
+
+      <div className="px-4 pb-4">
+
+        <div className="flex rounded-xl bg-white/5 p-1">
+
+          {languages.map(
+            (language) => (
+
+              <button
+                key={
+                  language.code
+                }
+                type="button"
+                onClick={() =>
+                  setLang(
+                    language.code
+                  )
+                }
+                className={`flex-1 rounded-lg px-2 py-2 text-xs font-bold transition ${
+                  lang ===
+                  language.code
+                    ? "bg-violet-600 text-white"
+                    : "text-slate-500 hover:text-white"
+                }`}
+              >
+
+                {
+                  language.label
+                }
+
+              </button>
+
+            )
+          )}
+
+        </div>
+
+      </div>
+
+      {/* User */}
+
+      {!checkingUser &&
+        user && (
+
+        <div className="border-t border-white/10 p-4">
+
+          <div className="mb-3 flex items-center gap-3">
+
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300">
+
+              <User
+                size={18}
+              />
+
+            </div>
+
+            <div className="min-w-0 flex-1">
+
+              <p className="truncate text-sm font-semibold text-white">
+                {user.name}
+              </p>
+
+              <p className="truncate text-xs text-slate-500">
+                {user.email}
+              </p>
+
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            onClick={
+              handleLogout
+            }
+            disabled={
+              loggingOut
+            }
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
+          >
+
+            <LogOut
+              size={16}
+            />
+
+            {loggingOut
+              ? "..."
+              : "Logout"}
+
+          </button>
+
+        </div>
+
+      )}
+
+    </div>
   );
-    }
+
+  return (
+    <>
+      {/* =====================================
+          DESKTOP SIDEBAR
+      ====================================== */}
+
+      <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 bg-[#0c1027] shadow-2xl lg:block">
+
+        <SidebarContent />
+
+      </aside>
+
+      {/* =====================================
+          MOBILE TOP BAR
+      ====================================== */}
+
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur lg:hidden">
+
+        <button
+          type="button"
+          onClick={() =>
+            setMenuOpen(true)
+          }
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+          aria-label="Open menu"
+        >
+
+          <Menu
+            size={21}
+          />
+
+        </button>
+
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+        >
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700">
+
+            <FileText
+              size={18}
+              className="text-white"
+            />
+
+          </div>
+
+          <span className="font-bold text-slate-900">
+            {t(
+              lang,
+              "appName"
+            )}
+          </span>
+
+        </Link>
+
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+
+          <User
+            size={18}
+          />
+
+        </div>
+
+      </header>
+
+      {/* =====================================
+          MOBILE OVERLAY
+      ====================================== */}
+
+      {menuOpen && (
+
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() =>
+            setMenuOpen(false)
+          }
+          className="fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm lg:hidden"
+        />
+
+      )}
+
+      {/* =====================================
+          MOBILE DRAWER
+      ====================================== */}
+
+      <aside
+        className={`fixed inset-y-0 start-0 z-[60] w-[285px] max-w-[85vw] bg-[#0c1027] shadow-2xl transition-transform duration-300 lg:hidden ${
+          menuOpen
+            ? "translate-x-0"
+            : lang === "ar"
+            ? "translate-x-full"
+            : "-translate-x-full"
+        }`}
+      >
+
+        <button
+          type="button"
+          onClick={() =>
+            setMenuOpen(false)
+          }
+          className="absolute end-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-slate-300 transition hover:text-white"
+          aria-label="Close menu"
+        >
+
+          <X
+            size={19}
+          />
+
+        </button>
+
+        <SidebarContent />
+
+      </aside>
+    </>
+  );
+}
