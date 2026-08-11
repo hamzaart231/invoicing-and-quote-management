@@ -873,5 +873,150 @@ export default function DashboardPage() {
 
               </div>
 
-              <p className="mt-4 font-semibold text-slate-600">
+                            <p className="mt-4 font-semibold text-slate-600">
+                {labels.noDocuments}
+              </p>
+
+              <p className="mt-1 max-w-sm text-sm text-slate-400">
+                {labels.createFirst}
+              </p>
+
+              <Link
+                href="/documents/new?type=invoice"
+                className="mt-5 flex min-h-10 items-center gap-2 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white"
+              >
+                <Plus size={16} />
+
+                {t(
+                  lang,
+                  "newInvoice"
+                )}
+              </Link>
+
+            </div>
+
+          ) : (
+
+            <div className="divide-y divide-slate-100">
+
+              {recentDocuments.map(
+                (doc) => {
+                  const amount =
+                    getDocumentTotal(
+                      doc
+                    );
+
+                  const statusStyle:
+                    Record<
+                      string,
+                      string
+                    > = {
+                    draft:
+                      "bg-slate-100 text-slate-600",
+
+                    sent:
+                      "bg-blue-50 text-blue-600",
+
+                    paid:
+                      "bg-emerald-50 text-emerald-600",
+
+                    overdue:
+                      "bg-red-50 text-red-600",
+
+                    expired:
+                      "bg-orange-50 text-orange-600",
+                  };
+
+                  return (
+                    <Link
+                      key={doc.id}
+                      href={`/documents/${doc.id}`}
+                      className="group flex min-h-[76px] items-center gap-3 px-4 py-3 transition hover:bg-slate-50/70 sm:px-5"
+                    >
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                          doc.type === "invoice"
+                            ? "bg-violet-50 text-violet-600"
+                            : "bg-cyan-50 text-cyan-600"
+                        }`}
+                      >
+                        {doc.type === "invoice" ? (
+                          <FileText size={18} />
+                        ) : (
+                          <FileCheck2 size={18} />
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+
+                        <div className="flex flex-wrap items-center gap-2">
+
+                          <p
+                            dir="ltr"
+                            className="font-semibold text-slate-900"
+                          >
+                            {doc.number}
+                          </p>
+
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                              statusStyle[
+                                doc.status
+                              ] ??
+                              statusStyle.draft
+                            }`}
+                          >
+                            {t(
+                              lang,
+                              doc.status
+                            )}
+                          </span>
+
+                        </div>
+
+                        <p className="mt-1 truncate text-xs text-slate-400">
+                          {doc.clientName || "—"}
+                        </p>
+
+                      </div>
+
+                      <div
+                        className={
+                          lang === "ar"
+                            ? "text-left"
+                            : "text-right"
+                        }
+                      >
+                        <p
+                          dir="ltr"
+                          className="whitespace-nowrap text-sm font-bold text-slate-900"
+                        >
+                          {formatCurrency(
+                            amount,
+                            lang
+                          )}
+                        </p>
+
+                        <p className="mt-1 text-[11px] text-slate-400">
+                          {doc.date}
+                        </p>
+
+                      </div>
+
+                    </Link>
+                  );
+                }
+              )}
+
+            </div>
+
+          )}
+
+        </section>
+
+      </div>
+
+    </div>
+  );
+}
          
