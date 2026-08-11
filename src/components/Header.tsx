@@ -68,11 +68,20 @@ export default function Header() {
   const [menuOpen, setMenuOpen] =
     useState(false);
 
-  const [checkingUser, setCheckingUser] =
-    useState(true);
+  const [
+    profileOpen,
+    setProfileOpen,
+  ] = useState(false);
 
-  const [loggingOut, setLoggingOut] =
-    useState(false);
+  const [
+    checkingUser,
+    setCheckingUser,
+  ] = useState(true);
+
+  const [
+    loggingOut,
+    setLoggingOut,
+  ] = useState(false);
 
   const isAuthPage =
     pathname === "/login" ||
@@ -142,11 +151,12 @@ export default function Header() {
   }, [pathname]);
 
   /* =====================================
-     CLOSE DRAWER
+     CLOSE MENUS ON NAVIGATION
   ===================================== */
 
   useEffect(() => {
     setMenuOpen(false);
+    setProfileOpen(false);
   }, [pathname]);
 
   /* =====================================
@@ -171,6 +181,9 @@ export default function Header() {
 
         setUser(null);
 
+        setMenuOpen(false);
+        setProfileOpen(false);
+
         router.replace(
           "/login"
         );
@@ -194,47 +207,59 @@ export default function Header() {
     return null;
   }
 
+  /* =====================================
+     NAVIGATION
+  ===================================== */
+
   const navItems = [
     {
       href: "/",
+
       label:
         t(
           lang,
           "dashboard"
         ),
+
       icon:
         LayoutDashboard,
     },
 
     {
       href: "/documents",
+
       label:
         t(
           lang,
           "invoices"
         ),
+
       icon:
         FileText,
     },
 
     {
       href: "/clients",
+
       label:
         t(
           lang,
           "clients"
         ),
+
       icon:
         Users,
     },
 
     {
       href: "/settings",
+
       label:
         t(
           lang,
           "settings"
         ),
+
       icon:
         Settings,
     },
@@ -244,9 +269,7 @@ export default function Header() {
     href: string
   ) => {
     if (href === "/") {
-      return (
-        pathname === "/"
-      );
+      return pathname === "/";
     }
 
     return pathname.startsWith(
@@ -298,7 +321,7 @@ export default function Header() {
 
       </div>
 
-      {/* New invoice */}
+      {/* New Invoice */}
 
       <div className="px-4 pb-5">
 
@@ -359,7 +382,9 @@ export default function Header() {
                 />
 
                 <span className="flex-1">
-                  {item.label}
+                  {
+                    item.label
+                  }
                 </span>
 
                 {active && (
@@ -493,6 +518,8 @@ export default function Header() {
 
       <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur lg:hidden">
 
+        {/* Menu */}
+
         <button
           type="button"
           onClick={() =>
@@ -507,6 +534,8 @@ export default function Header() {
           />
 
         </button>
+
+        {/* Brand */}
 
         <Link
           href="/"
@@ -531,18 +560,146 @@ export default function Header() {
 
         </Link>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+        {/* =================================
+            MOBILE PROFILE
+        ================================== */}
 
-          <User
-            size={18}
-          />
+        <div className="relative">
+
+          <button
+            type="button"
+            onClick={() =>
+              setProfileOpen(
+                !profileOpen
+              )
+            }
+            className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 transition active:scale-95"
+            aria-label="Account"
+          >
+
+            <User
+              size={18}
+            />
+
+          </button>
+
+          {profileOpen &&
+            user && (
+
+            <>
+              {/* Overlay */}
+
+              <button
+                type="button"
+                aria-label="Close profile menu"
+                onClick={() =>
+                  setProfileOpen(
+                    false
+                  )
+                }
+                className="fixed inset-0 z-40"
+              />
+
+              {/* Dropdown */}
+
+              <div className="absolute end-0 top-12 z-50 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
+
+                {/* Account */}
+
+                <div className="border-b border-slate-100 p-4">
+
+                  <div className="flex items-center gap-3">
+
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+
+                      <User
+                        size={19}
+                      />
+
+                    </div>
+
+                    <div className="min-w-0">
+
+                      <p className="truncate text-sm font-semibold text-slate-900">
+                        {user.name}
+                      </p>
+
+                      <p className="mt-0.5 truncate text-xs text-slate-400">
+                        {user.email}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+                {/* Actions */}
+
+                <div className="p-2">
+
+                  <Link
+                    href="/settings"
+                    onClick={() =>
+                      setProfileOpen(
+                        false
+                      )
+                    }
+                    className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                  >
+
+                    <Settings
+                      size={17}
+                    />
+
+                    {t(
+                      lang,
+                      "settings"
+                    )}
+
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={
+                      async () => {
+                        setProfileOpen(
+                          false
+                        );
+
+                        await handleLogout();
+                      }
+                    }
+                    disabled={
+                      loggingOut
+                    }
+                    className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                  >
+
+                    <LogOut
+                      size={17}
+                    />
+
+                    {loggingOut
+                      ? "..."
+                      : "Logout"}
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </>
+
+          )}
 
         </div>
 
       </header>
 
       {/* =====================================
-          MOBILE OVERLAY
+          MOBILE SIDEBAR OVERLAY
       ====================================== */}
 
       {menuOpen && (
